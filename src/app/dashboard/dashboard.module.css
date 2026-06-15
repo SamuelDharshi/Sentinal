@@ -1,0 +1,405 @@
+.root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-deep);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: var(--header-height);
+  background: rgba(13, 21, 21, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 16px;
+  z-index: 50;
+}
+.headerLeft  { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.headerCenter { display: flex; align-items: center; gap: 10px; flex: 2; justify-content: center; }
+.headerRight { display: flex; align-items: center; gap: 12px; flex: 1; justify-content: flex-end; }
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  background: linear-gradient(135deg, var(--teal), var(--purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  flex-shrink: 0;
+}
+.headerSep { width: 1px; height: 20px; background: var(--border); }
+.headerStatus { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+
+/* Budget meter */
+.budgetLabel { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; }
+.budgetMeter { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 280px; }
+.budgetBarWide { flex: 1; }
+.budgetNumbers { display: flex; align-items: baseline; gap: 2px; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.budgetRemain { color: var(--text-primary); font-weight: 600; }
+.budgetSep { color: var(--text-dim); }
+.budgetReset { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+
+.killBtn { padding: 8px 16px; font-size: 13px; }
+
+/* ── Main Grid ────────────────────────────────────────────────────────────── */
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  gap: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Generic Panel ────────────────────────────────────────────────────────── */
+.panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panelTitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.cardCount { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+
+/* ── Left Panel — Agents ──────────────────────────────────────────────────── */
+.agentPanel {
+  background: rgba(13, 21, 21, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border);
+  z-index: 10;
+}
+.agentList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.agentTop { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.agentName { font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.agentStatusLabel {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.agentStatusLabel.active  { background: var(--teal-glow);   color: var(--teal); }
+.agentStatusLabel.idle    { background: var(--bg-raised);   color: var(--text-dim); }
+.agentStatusLabel.killed  { background: rgba(239,68,68,0.08); color: var(--danger); }
+.agentStatusLabel.error   { background: rgba(239,68,68,0.08); color: var(--danger); }
+.agentRole { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; }
+.agentAction { font-size: 11px; color: var(--teal); font-style: italic; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agentBudget { display: flex; flex-direction: column; gap: 4px; }
+.agentBudgetLabel { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+.revokeBtn { margin-top: auto; font-size: 12px; width: 100%; justify-content: center; color: var(--danger); border-color: rgba(239,68,68,0.3); }
+.revokeBtn:hover { background: rgba(239,68,68,0.08); }
+
+/* ── Center Panel — Feed ──────────────────────────────────────────────────── */
+.feedPanel {
+  background: rgba(5, 8, 8, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid var(--border);
+  z-index: 10;
+}
+.feed { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.emptyFeed {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; gap: 12px; color: var(--text-dim);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+.emptyIcon { font-size: 40px; }
+.emptyNote { font-size: 12px; }
+
+/* Card internals */
+.cardTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cardCost { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+.cardHeadline { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; line-height: 1.3; }
+.cardSummary { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+.cardAction {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: var(--bg-raised); border-radius: 8px; padding: 10px 12px;
+  font-size: 12px; color: var(--text-primary); margin-bottom: 8px;
+}
+.cardActionLabel { font-family: var(--font-mono); color: var(--teal); font-weight: 600; flex-shrink: 0; }
+.cardMeta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
+
+/* ── Right Panel — Audit ──────────────────────────────────────────────────── */
+.auditPanel {
+  background: rgba(13, 21, 21, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed; inset: 0;
+  background: rgba(11,12,20,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fade-up 0.25s ease;
+}
+.modal {
+  background: rgba(13, 21, 21, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  width: 100%; max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.modalHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.modalBack { background: none; border: none; color: var(--text-secondary); font-size: 14px; cursor: pointer; padding: 6px; }
+.modalBack:hover { color: var(--text-primary); }
+.modalHeadline { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; line-height: 1.3; }
+.modalSection { margin-bottom: 20px; }
+.modalSectionTitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.modalText { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+.modalSources { display: flex; flex-wrap: wrap; gap: 8px; }
+.modalSource {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--teal);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.modalSource:hover { border-color: var(--teal); }
+.modalFooter {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.modalFooter strong { color: var(--text-primary); }
+
+/* Kill UI */
+.killIcon { font-size: 48px; margin-bottom: 16px; }
+.killTitle { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--danger); }
+.killDesc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px; }
+.killActions { display: flex; gap: 12px; justify-content: center; }
+
+.killedBanner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+  padding: 14px 20px;
+  z-index: 200;
+  animation: fade-up 0.3s ease;
+  box-shadow: 0 8px 32px rgba(239,68,68,0.2);
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.killedIcon { font-size: 18px; }
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: 220px 1fr; }
+}
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+  .headerCenter { display: none; }
+}
+
+/* ── FlowForge Agent Pipeline Showcase ─────────────────────────────────── */
+.pipelineTabBtn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-dim);
+}
+.pipelineTabActive {
+  background: var(--bg-raised) !important;
+  color: var(--teal) !important;
+  border-color: rgba(35,154,170,0.3) !important;
+  box-shadow: 0 0 10px rgba(35,154,170,0.1);
+}
+
+.pipelineCanvas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: auto;
+  padding: 24px;
+  background: var(--bg-deep) radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 16px 16px;
+  height: 100%;
+}
+
+.pipelineFlow {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  width: 100%;
+  margin: auto 0;
+}
+
+.pipelineRow {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+/* FlowForge Node style */
+.forgeNode {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 180px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  font-size: 12px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+.forgeNode:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  border-color: var(--teal);
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.nodeBody {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nodeRole {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.nodeStatus {
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nodeStatus.active {
+  color: var(--teal);
+  font-weight: 500;
+}
+
+.nodePort {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  z-index: 20;
+}
+.portInput {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.portOutput {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.forgeNode.activeNode {
+  border-color: var(--teal);
+  box-shadow: 0 0 15px rgba(35, 154, 170, 0.25);
+}
+
+.svgWires {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.wirePath {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  transition: stroke 0.3s;
+}
+
+.wirePathActive {
+  stroke: var(--teal);
+  stroke-width: 2.5;
+  stroke-dasharray: 6, 6;
+  animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
