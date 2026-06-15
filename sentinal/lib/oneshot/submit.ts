@@ -11,11 +11,10 @@ import {
   TransactionResult,
 } from './relayer';
 import { encodeUSDCTransfer, EncodedTransaction } from '@/lib/chain/transactions';
+import { USDC_ADDRESS } from '@/lib/chain/client';
 import { transactionVerifier } from './verification';
 import { insertAuditEvent } from '@/lib/db';
 import crypto from 'crypto';
-
-const USDC_ADDRESS_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`;
 const BASESCAN = process.env.NEXT_PUBLIC_BASESCAN_URL || 'https://basescan.org/tx';
 
 export interface OnChainPaymentResult {
@@ -56,7 +55,7 @@ export async function submitRealPayment(
     console.log('[1Shot] Relayer capabilities:', capabilities.targetAddress);
 
     // Step 2: Get live fee quote
-    const feeData = await getRelayFee(USDC_ADDRESS_BASE);
+    const feeData = await getRelayFee(USDC_ADDRESS);
     const maxFeeAmount = BigInt(feeData.minFee) * BigInt(2); // 2x safety buffer
 
     // Step 3: Encode real USDC transfer calldata via viem
@@ -68,7 +67,7 @@ export async function submitRealPayment(
     const result: TransactionResult = await submitAgentTransaction({
       permissionsContext,
       encodedTransactions: [JSON.stringify(tx)],
-      paymentToken: USDC_ADDRESS_BASE,
+      paymentToken: USDC_ADDRESS,
       maxFeeAmount: maxFeeAmount.toString(),
       destinationUrl: webhookUrl,
       taskId,
@@ -85,7 +84,10 @@ export async function submitRealPayment(
       throw new Error(`Transaction failed: ${confirmed.error}`);
     }
 
-    const txHash = confirmed.transactionHash || `0x${crypto.randomBytes(32).toString('hex')}`;
+    if (!confirmed.transactionHash) {
+      throw new Error('Transaction confirmed but no transaction hash returned from relayer');
+    }
+    const txHash = confirmed.transactionHash;
 
     // Step 6: Log to audit trail with real BaseScan link
     await insertAuditEvent({
@@ -130,13 +132,13 @@ export async function submitTransactionBundle(
 ): Promise<OnChainPaymentResult> {
   const taskId = crypto.randomUUID();
 
-  const feeData = await getRelayFee(USDC_ADDRESS_BASE);
+  const feeData = await getRelayFee(USDC_ADDRESS);
   const maxFeeAmount = (BigInt(feeData.minFee) * BigInt(transactions.length) * BigInt(2)).toString();
 
   const result = await submitAgentTransaction({
     permissionsContext,
     encodedTransactions: transactions.map(tx => JSON.stringify(tx)),
-    paymentToken: USDC_ADDRESS_BASE,
+    paymentToken: USDC_ADDRESS,
     maxFeeAmount,
     destinationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/oneshot`,
     taskId,
@@ -145,7 +147,10 @@ export async function submitTransactionBundle(
   });
 
   const confirmed = await transactionVerifier.verify(result.taskId);
-  const txHash = confirmed.transactionHash || `0x${crypto.randomBytes(32).toString('hex')}`;
+  if (!confirmed.transactionHash) {
+    throw new Error('Transaction bundle confirmed but no transaction hash returned');
+  }
+  const txHash = confirmed.transactionHash;
 
   return {
     txHash,
