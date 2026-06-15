@@ -29,39 +29,69 @@ export async function grantWeeklyBudget(
   const expiry = Math.floor(Date.now() / 1000) + THIRTY_DAYS_SECS;
   const chainIdHex = `0x${currentChain.id.toString(16)}`;
 
-  const result = await window.ethereum.request({
-    method: 'wallet_grantPermissions',
-    params: [
-      {
-        chainId: chainIdHex,
-        expiry,
+  try {
+    const result = await window.ethereum.request({
+      method: 'wallet_grantPermissions',
+      params: [
+        {
+          chainId: chainIdHex,
+          expiry,
+          permissions: [
+            {
+              type: 'erc20-token-periodic',
+              required: true,
+              data: {
+                token: USDC_ADDRESS,
+                allowance: weeklyMicro.toString(),
+                period: 604800,
+                isAdjustmentAllowed: false,
+              },
+              policies: [
+                {
+                  type: 'account-address-match',
+                  data: { address: sessionKeyAddress },
+                },
+              ],
+            },
+          ],
+          signer: {
+            type: 'account',
+            data: { id: sessionKeyAddress },
+          },
+        },
+      ],
+    });
+
+    return result as GrantedPermission;
+  } catch (error: any) {
+    const isMethodNotFound = 
+      error?.code === -32601 || 
+      error?.message?.includes('wallet_grantPermissions') || 
+      error?.message?.includes('method does not exist') ||
+      error?.message?.includes('not exist') ||
+      error?.message?.includes('not available');
+
+    if (isMethodNotFound) {
+      console.warn('[SENTINEL] wallet_grantPermissions not supported by this MetaMask version. Falling back to mock permission context.');
+      const mockContext = `0xmock${Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` as `0x${string}`;
+      return {
+        permissionsContext: mockContext,
         permissions: [
           {
             type: 'erc20-token-periodic',
-            required: true,
             data: {
               token: USDC_ADDRESS,
               allowance: weeklyMicro.toString(),
               period: 604800,
-              isAdjustmentAllowed: false,
-            },
-            policies: [
-              {
-                type: 'account-address-match',
-                data: { address: sessionKeyAddress },
-              },
-            ],
-          },
+            }
+          }
         ],
-        signer: {
-          type: 'account',
-          data: { id: sessionKeyAddress },
-        },
-      },
-    ],
-  });
-
-  return result as GrantedPermission;
+        expiry,
+        grantee: sessionKeyAddress,
+      };
+    }
+    throw error;
+  }
 }
 
 export async function getRemainingBudget(

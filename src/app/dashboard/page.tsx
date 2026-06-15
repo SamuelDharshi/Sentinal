@@ -132,7 +132,7 @@ export default function DashboardPage() {
       try {
         const cfg = JSON.parse(session);
         const ctx = cfg.permissionContext?.permissionsContext;
-        if (ctx) {
+        if (ctx && !ctx.startsWith('0xmock')) {
           await window.ethereum.request({
             method: 'wallet_revokePermissions',
             params: [{ permissionsContext: ctx }],
@@ -457,7 +457,7 @@ export default function DashboardPage() {
                 <div style={{ color: 'var(--text-dim)', fontSize: 11 }}>Waiting for agent activity…</div>
               )}
               {audit.map((event, i) => (
-                <AuditLine key={event.id || i} event={event} />
+                <AuditLine key={event.id ? `${event.id}-${i}` : i} event={event} />
               ))}
             </div>
           </div>

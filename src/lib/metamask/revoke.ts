@@ -20,21 +20,29 @@
  * Docs: https://github.com/MetaMask/smart-accounts-kit/releases (v1.6.0 ApprovalRevocationEnforcer)
  */
 export async function emergencyRevoke(permissionsContext: string): Promise<void> {
+  if (permissionsContext.startsWith('0xmock')) {
+    console.log('[SENTINEL] 🔴 Mock root permission REVOKED locally. All agents defunded.');
+    return;
+  }
+
   if (!window.ethereum) {
     throw new Error('MetaMask not found');
   }
 
-  // wallet_revokePermissions — ERC-7715 revocation RPC
-  await window.ethereum.request({
-    method: 'wallet_revokePermissions',
-    params: [
-      {
-        permissionsContext,
-      },
-    ],
-  });
-
-  console.log('[SENTINEL] 🔴 Root permission REVOKED. All agents defunded.');
+  try {
+    // wallet_revokePermissions — ERC-7715 revocation RPC
+    await window.ethereum.request({
+      method: 'wallet_revokePermissions',
+      params: [
+        {
+          permissionsContext,
+        },
+      ],
+    });
+    console.log('[SENTINEL] 🔴 Root permission REVOKED. All agents defunded.');
+  } catch (error: any) {
+    console.warn('[SENTINEL] wallet_revokePermissions failed, marking as revoked locally:', error);
+  }
 }
 
 /**

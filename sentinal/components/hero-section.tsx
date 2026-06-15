@@ -52,6 +52,18 @@ export function HeroSection() {
     
     setIsConnecting(true)
     try {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }]
+        });
+      } catch (permError: any) {
+        if (permError?.code === 4001) {
+          throw permError;
+        }
+        console.warn("wallet_requestPermissions failed, falling back to eth_requestAccounts", permError);
+      }
+
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[]
       if (accounts.length > 0) {
         setAddress(accounts[0])
@@ -302,11 +314,11 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden pt-20 pb-10 sm:pt-28 sm:pb-16 lg:pt-36">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none [mask-image:radial-gradient(ellipse_80%_60%_at_50%_20%,#000_40%,transparent_100%)]"
+        className="absolute inset-0 w-full h-full pointer-events-none mask-[radial-gradient(ellipse_80%_60%_at_50%_20%,#000_40%,transparent_100%)]"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -327,13 +339,13 @@ export function HeroSection() {
             </span>
 
             <span className="absolute inset-0 flex flex-col items-center">
-              <span className="text-balance bg-gradient-to-r from-[#FFEFBA] to-[#FFFFFF] bg-clip-text text-transparent">
+              <span className="text-balance bg-linear-to-r from-[#FFEFBA] to-[#FFFFFF] bg-clip-text text-transparent">
                 {displayedText1}
                 {displayedText2 === "" && (
                   <span className="inline-block w-[3px] h-[0.9em] bg-accent ml-1 animate-pulse" />
                 )}
               </span>
-              <span className="text-balance bg-gradient-to-r from-[#E44D26] to-[#F16529] bg-clip-text text-transparent">
+              <span className="text-balance bg-linear-to-r from-[#E44D26] to-[#F16529] bg-clip-text text-transparent">
                 {displayedText2}
                 {displayedText2 !== "" && (
                   <span
@@ -363,7 +375,7 @@ export function HeroSection() {
         </div>
 
         <div className="mt-20 relative">
-          <div className="absolute -inset-4 bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 blur-3xl opacity-50" />
+          <div className="absolute -inset-4 bg-linear-to-r from-accent/20 via-accent/10 to-accent/20 blur-3xl opacity-50" />
 
           <div className="relative overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
             <div className="relative rounded-xl border border-border/60 bg-[#141414] backdrop-blur-sm overflow-hidden shadow-2xl min-w-[900px] lg:min-w-0">

@@ -33,6 +33,18 @@ export function Navbar() {
     
     setIsConnecting(true)
     try {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }]
+        });
+      } catch (permError: any) {
+        if (permError?.code === 4001) {
+          throw permError;
+        }
+        console.warn("wallet_requestPermissions failed, falling back to eth_requestAccounts", permError);
+      }
+
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
       if (accounts.length > 0) {
         setAddress(accounts[0])

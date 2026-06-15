@@ -14,11 +14,11 @@ export const veniceClient = new OpenAI({
 
 // Model selection guide (from DX feedback in README):
 // - venice-uncensored-1.2: Best for task decomposition, JSON outputs, no content filters
-// - deepseek-r1-671b: Large context window, strong reasoning, ideal for synthesis
+// - deepseek-v4-pro: Private reasoning, ideal for intelligence synthesis
 // - llama-3.3-70b: Faster, good for simple queries
 export const VENICE_MODELS = {
   ORCHESTRATOR: 'venice-uncensored-1.2',    // Chief Agent: task decomposition
-  ANALYST: 'deepseek-r1-671b',              // Analyst Agent: intelligence synthesis
+  ANALYST: 'deepseek-v4-pro',              // Analyst Agent: intelligence synthesis
   FAST: 'llama-3.3-70b',                   // Quick evaluations
 } as const;
 

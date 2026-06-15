@@ -95,13 +95,13 @@ async function synthesizeBatch(
   scoutDelegation: DelegationContext,
   analystDelegation: DelegationContext
 ): Promise<IntelligenceCard | null> {
-  const analystCost = 0.004; // ~$0.004 per synthesis call on deepseek-r1-671b
+  const analystCost = 0.004; // ~$0.004 per synthesis call on deepseek-v4-pro
 
   await insertAuditEvent({
     id: crypto.randomUUID(),
     agent: 'Analyst',
     action: 'SYNTHESIZE_START',
-    detail: `Venice AI synthesis: ${batch.length} data points | deepseek-r1-671b | Private inference`,
+    detail: `Venice AI synthesis: ${batch.length} data points | deepseek-v4-pro | Private inference`,
     cost: analystCost,
     confirmed: false,
   });

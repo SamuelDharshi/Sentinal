@@ -122,7 +122,7 @@ export default function SetupPage() {
     <main className="relative min-h-screen bg-background text-foreground overflow-hidden flex flex-col font-sans select-none">
       {/* Premium background mesh & grid pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(35,154,170,0.08),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(123,95,212,0.06),transparent_50%)]" aria-hidden="true" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:32px_32px]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-size-[32px_32px]" aria-hidden="true" />
 
       {/* Navigation Header */}
       <nav className="relative z-50 border-b border-border/40 bg-background/50 backdrop-blur-xl flex items-center justify-between px-6 py-4">
@@ -133,7 +133,7 @@ export default function SetupPage() {
           <ArrowLeft className="h-4 w-4" />
           <span>{step > 1 ? 'Back' : 'Home'}</span>
         </button>
-        <span className="text-md font-bold tracking-[0.2em] font-mono bg-gradient-to-r from-teal via-teal-dim to-purple bg-clip-text text-transparent">
+        <span className="text-md font-bold tracking-[0.2em] font-mono bg-linear-to-r from-teal via-teal-dim to-purple bg-clip-text text-transparent">
           SENTINEL
         </span>
         <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export default function SetupPage() {
         <div className="w-full max-w-2xl bg-[#0f0f18]/80 border border-border/60 rounded-2xl p-8 shadow-2xl backdrop-blur-xl flex flex-col gap-6 relative">
           
           {/* Header indicator glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-teal to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-px bg-linear-to-r from-transparent via-teal to-transparent" />
 
           {/* Step Indicators */}
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -225,7 +225,7 @@ export default function SetupPage() {
 
               <button 
                 id="step1-next" 
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-teal to-teal-dim hover:from-teal-dim hover:to-teal text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_20px_rgba(35,154,170,0.3)]"
+                className="w-full h-11 rounded-xl bg-linear-to-r from-teal to-teal-dim hover:from-teal-dim hover:to-teal text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_20px_rgba(35,154,170,0.3)]"
                 onClick={() => setStep(2)} 
                 disabled={!brief.trim()}
               >
@@ -294,7 +294,7 @@ export default function SetupPage() {
                 </button>
                 <button 
                   id="step2-next" 
-                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-teal to-teal-dim hover:from-teal-dim hover:to-teal text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_20px_rgba(35,154,170,0.3)]" 
+                  className="flex-1 h-11 rounded-xl bg-linear-to-r from-teal to-teal-dim hover:from-teal-dim hover:to-teal text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_20px_rgba(35,154,170,0.3)]" 
                   onClick={() => setStep(3)} 
                   disabled={selectedSources.length === 0}
                 >
@@ -319,7 +319,7 @@ export default function SetupPage() {
               <div className="bg-[#12121a] border border-border/60 rounded-xl p-6 flex flex-col items-center gap-4">
                 <div className="flex items-baseline gap-1">
                   <span className="text-xl font-bold text-muted-foreground font-mono">$</span>
-                  <span className="text-5xl font-black font-display bg-gradient-to-r from-teal to-purple bg-clip-text text-transparent">{weeklyBudget}</span>
+                  <span className="text-5xl font-black font-display bg-linear-to-r from-teal to-purple bg-clip-text text-transparent">{weeklyBudget}</span>
                   <span className="text-sm font-semibold text-muted-foreground ml-1">/week USDC</span>
                 </div>
                 <input 
@@ -398,7 +398,7 @@ export default function SetupPage() {
                 </button>
                 <button 
                   id="grant-permissions-btn" 
-                  className="flex-[2] h-11 rounded-xl bg-gradient-to-r from-teal via-teal-dim to-purple hover:opacity-95 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_25px_rgba(123,95,212,0.3)]"
+                  className="flex-2 h-11 rounded-xl bg-linear-to-r from-teal via-teal-dim to-purple hover:opacity-95 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_4px_25px_rgba(123,95,212,0.3)]"
                   onClick={grantAndLaunch} 
                   disabled={granting}
                 >

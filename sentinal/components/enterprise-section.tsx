@@ -89,7 +89,7 @@ export function EnterpriseSection() {
           ))}
         </div>
 
-        <div className="mx-auto mt-16 max-w-2xl rounded-2xl border border-accent/40 bg-gradient-to-b from-accent/10 to-transparent p-8 text-center sm:p-12">
+        <div className="mx-auto mt-16 max-w-2xl rounded-2xl border border-accent/40 bg-linear-to-b from-accent/10 to-transparent p-8 text-center sm:p-12">
           <h3 className="font-mono text-xl font-bold">Ready to scale?</h3>
           <p className="mt-4 text-muted-foreground">
             Talk to our team to learn how SENTINEL can power your organization's competitive intelligence.
