@@ -8,530 +8,403 @@ Built for the **MetaMask Smart Accounts Kit × 1Shot API × Venice AI Dev Cook-O
 
 ## The Idea
 
-Every indie developer and solo founder fights **information asymmetry**. Large companies have intelligence teams that monitor markets 24/7. You don't. So you spend 2–3 hours a day manually scanning HackerNews, GitHub, and Twitter — and still react too late to competitor moves.
+Every indie developer, solo founder, and digital creator fights **information asymmetry**. Large corporations have full-time intelligence teams that monitor markets 24/7—tracking competitor updates, scraping product forums, checking GitHub activity, and detecting trends. Individual builders cannot afford that. 
 
-SENTINEL solves this in three ways simultaneously:
+Solo operators usually resort to scanning HackerNews, GitHub, and Twitter manually for 2 to 3 hours a day, reacting to competitor moves too late, and leaking search intent by querying OpenAI, Google, or other tracking tools with sensitive company queries.
 
-1. **It's autonomous** — after a one-time 5-minute setup, zero human interaction required
-2. **It's private** — all synthesis runs on Venice AI, which has zero query logging (unlike OpenAI)
-3. **It's verifiable** — every agent action produces a BaseScan transaction link as on-chain proof
+### The SENTINEL Solution
+SENTINEL makes every solo operator as intelligence-rich as a venture-backed startup for a small budget (e.g., $5–$15/week) with zero daily effort. It solves this problem by deploying an autonomous, decentralized workforce of specialized AI agents governed by a cryptographic budget hierarchy:
 
-The system deploys a four-agent workforce under a cryptographically enforced budget hierarchy. One permission revocation kills the entire fleet. No escape hatches.
+```
++-----------------------------------------------------------------------------+
+|                                  SENTINEL                                   |
+|                                                                             |
+|      [ USER WALLET ] ----( 1. One-time Setup & Budget Authorization )---+   |
+|                                                                         |   |
+|  +----------------------------------------------------------------------+   |
+|  |                                                                          |
+|  |   +-------------------------------------------------------------------+  |
+|  |   |                        CHIEF ORCHESTRATOR                         |  |
+|  |   |         - Decomposes Brief (Venice AI: venice-uncensored-1.2)     |  |
+|  +-->|         - Deploys Sub-Delegations (ERC-7710 Budget Slicing)       |  |
+|      +----------+-----------------------+-----------------------+--------+  |
+|                 |                       |                       |           |
+|                 | ERC-7710              | ERC-7710              | ERC-7710  |
+|                 | ($3.00/wk)            | ($6.00/wk)            | ($1.00/wk)|
+|                 v                       v                       v           |
+|            +----------+            +----------+            +----------+     |
+|            |  SCOUT   |            | ANALYST  |            |   CFO    |     |
+|            |  AGENT   |            |  AGENT   |            |  AGENT   |     |
+|            +----+-----+            +----+-----+            +----+-----+     |
+|                 |                       ^                       |           |
+|        Finds & buys data                | Private               | Monitors  |
+|        via RSS or x402                  | Synthesis             | budget &  |
+|                 |                       | (deepseek-r1)         | DIEM stake|
+|                 v                       |                       v           |
+|            +----------+                 |                  +----------+     |
+|            | Raw Data |-----------------+                  | sVVV/DIEM|     |
+|            +----------+                                    +----------+     |
+|                                                                             |
++-----------------------------------------------------------------------------+
+```
+
+### Core Architecture Pillars
+
+1. **True Autonomy**: Setup takes 5 minutes. The user connects their MetaMask wallet once, upgrade to a smart account, writes an intelligence brief, sets a weekly budget, and never touches the app again. The system runs 24/7 in the background.
+2. **Absolute Privacy**: All intellectual synthesis runs on Venice AI's zero-logging API. Unlike OpenAI or Google, Venice does not log search queries or model inputs, ensuring competitive queries stay private.
+3. **On-chain Verifiability**: Every action taken by the agents (purchasing data or calling Venice APIs) executes via smart account delegations and produces a BaseScan transaction link, providing an immutable audit trail.
+4. **Agentic Discovery (x402)**: The Scout Agent does not have hardcoded API keys. When it encounters paywalled data provider endpoints, it handles the standard `402 Payment Required` HTTP response, parses the payment metadata, and dynamically pays for the query in USDC using its delegated ERC-7710 budget, completing the transaction via the 1Shot gasless relayer.
+5. **Economic CFO Optimization**: The CFO Agent monitors spending. If weekly data gathering and synthesis fees exceed a target threshold, it automatically swaps USDC for Venice's native token (VVV) via Aerodrome, stakes it into sVVV, and mints DIEM tokens to provide zero-marginal-cost inference credits for the Analyst Agent in perpetuity.
 
 ---
 
 ## How the App Works
 
-### The One-Time Setup
+### 1. MetaMask Smart Account Upgrade (EIP-7702)
+Standard External Owned Accounts (EOAs) cannot delegate permissions or execute complex multi-agent budgets autonomously. SENTINEL upgrades the user's EOA to a hybrid Smart Account using EIP-7702. The upgrade transaction gas is sponsored by the 1Shot Relayer in USDC, requiring no native ETH in the user's wallet.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SENTINEL SETUP WIZARD                            │
-│                                                                     │
-│  STEP 1 ──────────────────────────────────────────────────────      │
-│  Connect MetaMask → EIP-7702 auto-upgrade to Smart Account          │
-│  (1Shot relayer sponsors gas in USDC — zero ETH required)           │
-│                                                                     │
-│  STEP 2 ──────────────────────────────────────────────────────      │
-│  Write your Intelligence Brief in plain English:                    │
-│    "I build developer tools. Track HN, GitHub, Product Hunt.       │
-│     Watch: Cursor, Copilot, CodeRabbit."                           │
-│  Select data sources: Free (HN, GitHub, PH) or paid via x402       │
-│                                                                     │
-│  STEP 3 ──────────────────────────────────────────────────────      │
-│  Set weekly USDC budget → confirm ONE MetaMask popup (ERC-7715)    │
-│  ████████████░░░  Scout   $3.00  (30%)                             │
-│  ██████████████░  Analyst $6.00  (60%)                             │
-│  ██░░░░░░░░░░░░░  CFO     $1.00  (10%)                             │
-│                                                                     │
-│  → That's it. You never touch the crypto stack again.               │
-└─────────────────────────────────────────────────────────────────────┘
+  [ User EOA Wallet ] -------( Request Upgrade )--------> [ 1Shot Relayer ]
+                                                                 |
+                                                                 | Checks Bytecode & Sponsors
+                                                                 v
+  [ Smart Account (0xef0100...) ] <------------------------------+
+  ( Upgraded in one transaction via EIP-7702 )
 ```
 
-### The Running State — Mission Control Dashboard
+### 2. The Budget Allocation Hierarchy (ERC-7715 & ERC-7710)
+Through a single MetaMask popup, the user authorizes a weekly USDC budget using ERC-7715. The Chief Orchestrator then splits this budget into sub-allowances for the Scout, Analyst, and CFO sub-agents using ERC-7710 sub-delegations:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  SENTINEL                          Budget: $7.23/$10.00  ████████░░  [KILL] │
-├──────────────────┬──────────────────────────────────────┬───────────────────┤
-│  AGENT STATUS    │  INTELLIGENCE FEED                   │  AUDIT TRAIL      │
-│                  │                                      │                   │
-│  ◉ CHIEF         │  ┌─ HIGH URGENCY ─────────────────┐ │ 14:02:33 Scout    │
-│  Orchestrating   │  │ Cursor launched Agent Mode —   │ │ → SerperAPI       │
-│                  │  │ directly targeting your niche.  │ │ $0.002 ✓ [↗]     │
-│  ◉ SCOUT         │  │                                 │ │                   │
-│  Querying GitHub │  │ [Chief]→[Scout→Serper $0.002]  │ │ 14:02:35 Analyst  │
-│  $2.31 left      │  │ →[Analyst→Venice] [↗] $0.014   │ │ → Venice AI       │
-│                  │  │ [Draft response →]              │ │ $0.004 ✓ [↗]     │
-│  ◉ ANALYST       │  └─────────────────────────────────┘ │                   │
-│  Synthesizing    │                                      │ 14:01:12 CFO      │
-│  $5.77 left      │  ┌─ TRENDING ──────────────────────┐ │ → Spend check     │
-│                  │  │ "AI code review" queries up     │ │ $6.20/wk → PAYG ✓│
-│  ◎ CFO           │  │ 340% on HN this week.           │ │                   │
-│  Monitoring      │  │ [Scout→HN free]→[Analyst] ↗    │ │ [↗] = BaseScan    │
-│  $0.84 left      │  └─────────────────────────────────┘ │                   │
-│                  │                                      │                   │
-│  [Revoke All]    │                                      │                   │
-└──────────────────┴──────────────────────────────────────┴───────────────────┘
+                        [ Root Smart Account ] (Allowance: $10/wk USDC)
+                                  |
+                                  | (ERC-7715 Permissions Granted)
+                                  v
+                       [ Chief Orchestrator ]
+                        /         |         \
+                       /          |          \  (ERC-7710 Sub-delegations)
+                      /           |           \
+                     v            v            v
+                [ Scout ]     [ Analyst ]   [ CFO ]
+                ($3.00/wk)    ($6.00/wk)   ($1.00/wk)
 ```
 
----
-
-## Agent Architecture
-
-### The Delegation Chain
+### 3. x402 Micropayments Handshake
+When the Scout Agent scrapes the web, it queries data APIs. If an API is paywalled, it returns an HTTP `402 Payment Required` status. The Scout Agent parses the requirements, verifies the cost against its remaining budget, constructs an ERC-7710 payment header, pays the seller on-chain via 1Shot, and retries the request with the `X-PAYMENT` token header:
 
 ```
-User Wallet (MetaMask Smart Account)
-    │
-    │  ERC-7715: "spend up to $10 USDC/week for intelligence research"
-    │  Scope: Erc20TransferAmount · 30-day expiry · 1Shot-relayed
-    ▼
-┌─────────────────────────────────────────┐
-│         CHIEF ORCHESTRATOR              │
-│  Venice AI (venice-uncensored-1.2)      │
-│  ─────────────────────────────────────  │
-│  • Decomposes plain-English brief       │
-│  • Creates ERC-7710 sub-delegations     │
-│  • Budget: $10/week (full allocation)   │
-└──────┬──────────────┬───────────────┬───┘
-       │ ERC-7710     │ ERC-7710      │ ERC-7710
-       │ $3/wk        │ $6/wk         │ $1/wk
-       ▼              ▼               ▼
- ┌──────────┐  ┌───────────────┐  ┌──────────┐
- │  SCOUT   │  │    ANALYST    │  │   CFO    │
- │  Agent   │  │    Agent      │  │  Agent   │
- │──────────│  │───────────────│  │──────────│
- │ • HN     │  │ Venice AI     │  │ Monitor  │
- │ • GitHub │  │ deepseek-     │  │ spend    │
- │ • PH RSS │  │ r1-671b       │  │ DIEM     │
- │ • x402   │  │ Private synth │  │ staking  │
- └──────────┘  └───────────────┘  └──────────┘
+    [ Scout Agent ]                                       [ Data Provider API ]
+           |                                                        |
+           |---- 1. GET /api/search?q=cursor ---------------------->|
+           |                                                        |
+           |<--- 2. 402 Payment Required ---------------------------|
+           |        (amount: 2000, recipient: 0xSeller...)          |
+           |                                                        |
+           |--[ Check: cost < remainingBudget & Safety limit ]      |
+           |                                                        |
+           |---- 3. GET /api/search + X-PAYMENT ------------------->|
+           |        (using ERC-7710 Sub-delegation)                 |
+           |                                                        |
+           |                                   [ Relayer submits ]  |
+           |                                   [ transfer on-chain ]|
+           |                                                        |
+           |<--- 4. 200 OK + Payload -------------------------------|
 ```
 
-### Kill Switch Propagation
+### 4. CFO Staking Decision tree
+Every week, the CFO Agent reviews the running expense logs. If the Venice AI inference cost projects to over $40/month, the CFO swaps USDC for VVV on Aerodrome, locks sVVV for 4 weeks, and mints Venice DIEM tokens. This secures free daily inference limits for the Analyst Agent:
 
 ```
-User clicks [KILL]
-    │
-    ▼
-revokePermissions(rootPermissionContext)
-    │
-    │  ERC-7715 root invalidated on-chain
-    │
-    ├──► Scout delegation: INVALID  (same block)
-    ├──► Analyst delegation: INVALID (same block)
-    └──► CFO delegation: INVALID    (same block)
-         │
-         └──► "All agents defunded. Your funds are safe."
+                     [ CFO Execution (Weekly check) ]
+                                    |
+                                    v
+                     [ Venice Spend * 4.33 > $40/mo? ]
+                               /         \
+                             YES          NO
+                             /             \
+                            v               v
+                   [ Stake USDC ]     [ Pay-As-You-Go ]
+                        |             (Continue x402)
+                        v
+                 [ Swap USDC -> VVV ]
+                 (Aerodrome on Base)
+                        |
+                        v
+                 [ Lock VVV -> sVVV ]
+                    (4-Week Lock)
+                        |
+                        v
+                 [ Stake sVVV -> DIEM ]
+                 (Mint perpetual credits)
+```
+
+### 5. Mission Control UI Dashboard
+The user interacts with a 3-panel realtime terminal mapping agent execution, raw feeds, and on-chain transactions:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────┐
+│ SENTINEL  [Active]                            Budget: $7.23 / $10.00 USDC [■■■■■░░]   │
+│ Registered: 0x15f8...d72d                     Resets in: 4d 12h              [ KILL ] │
+├─────────────────────────┬──────────────────────────────────────────┬──────────────────┤
+│ AGENT STATUS            │ INTELLIGENCE FEED                        │ AUDIT TRAIL      │
+│                         │                                          │                  │
+│ [◉] CHIEF ORCHESTRATOR  │ ┌─ HIGH URGENCY ───────────────────────┐ │ 23:10:01 Scout   │
+│     State: Reasoning    │ │ Cursor launched Agent Mode           │ │ -> GET /github   │
+│     Budget: $10.00      │ │ - Direct threat to your niche        │ │ Cost: Free  [✓]  │
+│                         │ │                                      │ │                  │
+│ [◉] SCOUT AGENT         │ │ [Chief]->[Scout->Serper ↗]->[Analyst]│ │ 23:10:04 Scout   │
+│     State: Querying HN  │ │ Total Cost: $0.006 USDC              │ │ -> GET /serper   │
+│     Budget: $2.31 Left  │ └──────────────────────────────────────┘ │ Cost: $0.002 [↗] │
+│                         │                                          │                  │
+│ [◉] ANALYST AGENT       │ ┌─ TRENDING ───────────────────────────┐ │ 23:10:12 Analyst │
+│     State: Synthesizing │ │ AI code review search queries up 340%│ │ -> Venice synth  │
+│     Budget: $5.77 Left  │ │                                      │ │ Cost: $0.004 [↗] │
+│                         │ │ [Chief]->[Scout->HN]->[Analyst]      │ │                  │
+│ [◎] CFO AGENT           │ │ Total Cost: $0.004 USDC              │ │ 23:10:15 CFO     │
+│     State: Monitoring   │ └──────────────────────────────────────┘ │ -> Audit check   │
+│     Budget: $0.84 Left  │                                          │ │ Balance ok   [✓] │
+└─────────────────────────┴──────────────────────────────────────────┴──────────────────┘
 ```
 
 ---
 
 ## Full System Flow — Sequence Diagram
 
-```
-User          MetaMask SAK      1Shot Relayer    Chief Agent    Scout Agent    Venice AI    CFO Agent
- │                │                  │               │              │              │             │
- │──EIP-7702──────▶                  │               │              │              │             │
- │  upgrade req   │                  │               │              │              │             │
- │                │──sponsor gas─────▶               │              │              │             │
- │                │◀─────tx hash─────│               │              │              │             │
- │◀─Smart Acct────│                  │               │              │              │             │
- │                │                  │               │              │              │             │
- │──ERC-7715 grant▶                  │               │              │              │             │
- │  $10/wk USDC   │──relay tx────────▶               │              │              │             │
- │                │                  │──permission───▶              │              │             │
- │                │                  │   granted     │              │              │             │
- │                │                  │               │─ERC-7710 redelegate─────────────────────▶ │
- │                │                  │               │  Scout $3, Analyst $6, CFO $1            │
- │                │                  │               │              │              │             │
- │                │                  │               │──task list───▶              │             │
- │                │                  │               │  (from brief)│              │             │
- │                │                  │               │              │─HN/GitHub/PH▶              │
- │                │                  │               │              │  free HTTP   │             │
- │                │                  │               │              │              │             │
- │                │                  │               │              │─GET /api──────────────────▶│
- │                │                  │               │              │  (402 resp)  │             │
- │                │                  │               │              │─X-PAYMENT────────────────▶ │
- │                │                  │               │              │  ERC-7710    │             │
- │                │                  │ ◀─webhook─────│──────────────│──────────────│────── tx ─  │
- │                │                  │   confirm     │              │              │             │
- │                │                  │               │◀─raw data────│              │             │
- │                │                  │               │              │              │             │
- │                │                  │               │──synthesize──────────────────▶            │
- │                │                  │               │  (private)   │     Venice AI│             │
- │                │                  │               │◀─intel card──────────────────│             │
- │                │                  │               │              │              │             │
- │◀─insight feed──│──────────────────│───────────────│              │              │             │
- │                │                  │               │              │              │             │
- │                │                  │               │──audit spend────────────────────────────▶ │
- │                │                  │               │              │              │    CFO eval │
- │                │                  │               │              │              │    DIEM?    │
-```
+The diagram below details the entire flow of the application, showing onboarding, setup, the core loops of the Scout, Analyst, and CFO agents, and the revocation kill switch.
 
----
+```mermaid
+sequence diagram
+    autonumber
+    actor User
+    participant MetaMask SAK
+    participant 1Shot Relayer
+    participant Chief Agent
+    participant Scout Agent
+    participant Analyst Agent
+    participant CFO Agent
+    participant Venice AI
+    participant DB as SQLite DB
 
-## x402 Agentic Discovery — How Scout Pays for Data
+    Note over User, MetaMask SAK: Phase 1: Onboarding & Account Upgrade
+    User->>MetaMask SAK: Connect Wallet
+    MetaMask SAK->>1Shot Relayer: checkAddressUpgraded(userAddress)
+    1Shot Relayer-->>MetaMask SAK: Upgraded: false (EOA)
+    MetaMask SAK->>User: Request EIP-7702 Upgrade Signature
+    User->>MetaMask SAK: Sign Upgrade Transaction
+    MetaMask SAK->>1Shot Relayer: submitUpgradeTx(authSig)
+    1Shot Relayer->>1Shot Relayer: Sponsor Gas (USDC)
+    1Shot Relayer-->>MetaMask SAK: Upgrade Confirmed (0xef0100 prefix)
+    MetaMask SAK-->>User: Redirect to Setup Wizard
 
-This is the core innovation of SENTINEL's x402 integration. The Scout Agent does not have hardcoded API prices.
+    Note over User, Chief Agent: Phase 2: Setup & Launch
+    User->>Chief Agent: Input Brief, Competitors, Sources, Budget ($10/wk)
+    Chief Agent->>MetaMask SAK: Request ERC-7715 budget grant
+    MetaMask SAK->>User: Prompt budget authorization (1 popup)
+    User->>MetaMask SAK: Approve Budget
+    MetaMask SAK->>DB: Save Session Context & Start
+    
+    Note over Chief Agent, CFO Agent: Phase 3: Autonomous Workforce Execution Loop
+    Loop Every 1 Hour
+        Chief Agent->>DB: Fetch Active Session
+        Chief Agent->>Venice AI: Decompose brief into tasks (venice-uncensored-1.2)
+        Venice AI-->>Chief Agent: TaskList JSON
+        Chief Agent->>Chief Agent: Redelegate Budgets via ERC-7710
+        Chief Agent->>Scout Agent: Launch tasks (Scout Budget: $3)
+        Chief Agent->>Analyst Agent: Assign synthesis questions (Analyst Budget: $6)
+        Chief Agent->>CFO Agent: Launch spend evaluation (CFO Budget: $1)
 
-```
-Scout Agent                          Serper/Diffbot API
-    │                                      │
-    │─── GET /api/search?q=cursor ─────────▶
-    │                                      │
-    │◀── 402 Payment Required ─────────────│
-    │    {                                 │
-    │      "amount": "2000",               │  (2000 micro-USDC = $0.002)
-    │      "token": "0x833589f...",        │
-    │      "recipient": "0xSeller...",     │
-    │      "chainId": 8453                 │
-    │    }                                 │
-    │                                      │
-    │ Check: $0.002 < remaining budget ✓   │
-    │ Check: $0.002 < $0.10 safety limit ✓ │
-    │                                      │
-    │ Construct X-PAYMENT header:          │
-    │  {scheme: "erc7710",                 │
-    │   network: "eip155:8453",            │
-    │   delegationContext: <ERC-7710>}     │
-    │                                      │
-    │─── GET /api/search (+ X-PAYMENT) ────▶
-    │                                      │
-    │◀── 200 OK + raw intelligence ────────│
-    │                                      │
-    │ Log to audit trail:                  │
-    │  "Scout → SerperAPI $0.002 ✓ [↗]"   │
-```
+        Note over Scout Agent, 1Shot Relayer: Scout Agent Data Gathering (x402)
+        Scout Agent->>Scout Agent: Query free RSS feeds (HN, Github, PH)
+        Scout Agent->>Scout Agent: Query Serper API (paid)
+        Note over Scout Agent: API returns 402 Payment Required
+        Scout Agent->>1Shot Relayer: Submit ERC-7710 USDC Transfer to Seller
+        1Shot Relayer->>1Shot Relayer: Relays tx on-chain (Base Mainnet)
+        1Shot Relayer-->>Scout Agent: Webhook notification + Tx hash
+        Scout Agent->>Scout Agent: Append X-PAYMENT header
+        Scout Agent->>Scout Agent: Retry API with Payment Header -> Returns data
+        Scout Agent->>DB: Log Scout Raw Data & Audit Trail Event
 
-### Replay Protection (Database-Backed)
+        Note over Analyst Agent, Venice AI: Analyst Agent private synthesis
+        Analyst Agent->>DB: Fetch Scout Raw Data
+        Analyst Agent->>Venice AI: Private synthesis (deepseek-r1-671b)
+        Venice AI-->>Analyst Agent: Intelligence Card JSON ( headline, summary, urgency, actions )
+        Analyst Agent->>DB: Write Intelligence Card to DB (BaseScan linked trace)
 
-```
-Incoming payment request
-    │
-    ▼
-generatePaymentHash({amount, token, recipient, chainId})
-    │
-    ▼
-INSERT OR IGNORE INTO processed_payments (hash, processed_at)
-    │
-    ├── changes == 1 → NEW payment → process ✓
-    │
-    └── changes == 0 → DUPLICATE → throw "Payment already processed"
-         │
-         └── Survives server restarts (SQLite, not in-memory Set)
+        Note over CFO Agent, 1Shot Relayer: CFO Agent cost optimization
+        CFO Agent->>DB: Fetch weekly Venice spending metrics
+        CFO Agent->>CFO Agent: Evaluate projected monthly spend
+        alt Spend > $40/month
+            CFO Agent->>1Shot Relayer: Swap USDC to VVV (Aerodrome Base)
+            CFO Agent->>1Shot Relayer: Stake VVV to sVVV
+            CFO Agent->>1Shot Relayer: Mint DIEM (zero-marginal-cost inference)
+            CFO Agent->>DB: Log Staking Event in Audit Trail
+        else Spend <= $40/month
+            CFO Agent->>DB: Log Pay-As-You-Go status
+        end
+    end
+
+    Note over User, MetaMask SAK: Phase 4: Emergency Revocation
+    User->>Chief Agent: Click [KILL] Switch
+    Chief Agent->>MetaMask SAK: Call wallet_revokePermissions()
+    MetaMask SAK->>1Shot Relayer: Revoke root permission context on-chain
+    1Shot Relayer-->>MetaMask SAK: Revoked
+    Chief Agent->>DB: Set session status to 'killed' and defund agents
+    Chief Agent-->>User: Show "All agents defunded. Funds safe."
 ```
 
 ---
 
-## CFO Agent — DIEM Staking Decision Tree
+## Detailed Step-by-Step Usage Instructions
 
-Venice AI launched DIEM tokens in late 2025 (each DIEM = $1/day of inference in perpetuity). The CFO Agent is the only implementation of this economic layer in the hackathon.
+### Step 1: Wallet Connection & Account Upgrade
+1. Open the SENTINEL web app (defaults to `http://localhost:3000`).
+2. Click **Connect Wallet** in the top-right header or on the landing page.
+3. MetaMask will prompt you to connect. Approve the prompt.
+4. The system automatically inspects your wallet bytecode (`isDeleGator(address)`) for the EIP-7702 prefix (`0xef0100`).
+5. If your account is a standard EOA, you will be prompted with a MetaMask upgrade dialog. Click **Sign**.
+6. The 1Shot Relayer registers this EIP-7702 authorization and executes the upgrade on-chain. Gas fees are sponsored using USDC—**you do not need any ETH**.
 
-```
-Every week, CFO Agent runs:
+### Step 2: Formulating the Intelligence Brief
+1. You will be redirected to the Onboarding Setup Wizard.
+2. In **Step 1 of 3: What's your business?**, write a plain-English brief of your product, audience, and what signals you want to track.
+   - *Example:* "I build developer tools. My product is an AI-powered code review assistant. Track HN, GitHub, and Product Hunt. Watch Cursor, Copilot, and CodeRabbit. Alert me on new competitive features or launches."
+3. In the **Competitors** textarea, list your direct competitors, one per line:
+   ```
+   Cursor
+   Copilot
+   CodeRabbit
+   ```
 
-Weekly Venice spend × 4.33 = Projected monthly spend
-                │
-                ▼
-        > $40/month?
-       /             \
-     YES               NO
-      │                 │
-      ▼                 ▼
-  DIEM_STAKE       PAY_AS_YOU_GO
-      │             (x402 continues)
-      │
-      ▼
-  1. USDC → VVV
-     (Aerodrome DEX swap on Base)
-      │
-      ▼
-  2. VVV → sVVV
-     (4-week lock period)
-      │
-      ▼
-  3. sVVV → DIEM mint
-     (each DIEM = $1/day forever)
-      │
-      ▼
-  Zero-marginal-cost inference
-  for future Analyst calls
-```
+### Step 3: Selecting Data Sources & Budgeting
+1. In **Step 2 of 3: Where should we look?**, select the sources you want the Scout Agent to scan.
+   - Free sources include HackerNews, GitHub Trending, and Product Hunt RSS feeds.
+   - Paid sources operate via x402 micropayments. These include the Serper Search API, Diffbot Web Intelligence, and BuiltWith Tech API.
+2. In **Step 3 of 3: Set your budget**, use the interactive slider to configure a weekly budget limit in USDC ($5 to $50).
+3. The UI automatically displays the budget slicing split:
+   - **Scout Agent**: 30% (used to query RSS feeds and purchase paid data via x402).
+   - **Analyst Agent**: 60% (used for private Venice AI reasoning and report generation).
+   - **CFO Agent**: 10% (monitors spend records, Swaps USDC -> VVV, and stakes DIEM to lower compute overhead).
 
-All steps execute via 1Shot relayer — no ETH in any wallet.
+### Step 4: Granting Permissions
+1. Click the **⚡ Grant Permission & Launch Agents** button.
+2. MetaMask will show a single `wallet_grantPermissions` popup (ERC-7715). This grants the Chief Agent the permission to spend up to your weekly USDC budget limit.
+3. Confirm the popup.
+4. The setup wizard completes, and you are automatically redirected to the **Mission Control Dashboard**.
+
+### Step 5: Interacting with Mission Control
+The dashboard is split into three main modules:
+- **Left Panel (Agent Status)**: Displays the running status of your agents. Active agents pulse teal (`#239AAA`), while idle agents display grey. You can track each agent's individual remaining weekly budget here.
+- **Center Panel (Intelligence Feed)**: This is your private feed. Cards are loaded in real-time. Urgent competitive updates show an orange border, trending updates show a purple border, and low-urgency insights show grey.
+  - At the bottom of each card is a **Delegation Trace** chip row:
+    `[Chief] -> [Scout: Serper $0.002 ↗] -> [Analyst: Venice $0.004 ↗] -> [You]`
+  - Clicking `[↗]` opens the BaseScan transaction, proving the agent's work.
+- **Right Panel (Audit Trail)**: A live scrolling terminal reflecting agent transactions, API calls, and gas fees. Every entry contains a clickable transaction link to BaseScan.
+
+### Step 6: Triggering the Emergency Stop
+1. If you want to stop the workforce, click the red **[KILL]** button in the top-right corner of the dashboard.
+2. The app calls `wallet_revokePermissions` on your root ERC-7715 permission context.
+3. The MetaMask SAK revokes the permission on-chain, rendering all child delegations (Scout, Analyst, CFO) invalid in the same block.
+4. The UI displays an overlay: **"All agents defunded. Your funds are safe."** All status indicators turn grey.
 
 ---
 
 ## Technology Stack
 
-| Layer | Technology | What It Does |
+| Layer | Technology | Purpose |
 |---|---|---|
-| Account | MetaMask EIP-7702 | Upgrades EOA to Smart Account (one-time, gas-free) |
-| Permissions | ERC-7715 | User grants weekly USDC budget with spend scope |
-| Delegation | ERC-7710 | Chief slices budget to Scout/Analyst/CFO |
-| Payments | x402 protocol | Scout pays paywalled APIs with `X-PAYMENT` header |
-| Gas | 1Shot Relayer | All transactions in USDC — zero ETH anywhere |
-| AI | Venice AI | Private inference — no query logging, DIEM staking |
-| Models | venice-uncensored-1.2 | Chief (no content filters, competitive intel safe) |
-| Models | deepseek-r1-671b | Analyst (671B params, large context, strong reasoning) |
-| Chain | Base Mainnet (8453) | All on-chain activity |
-| DB | SQLite | Replay protection, audit events, cards, agent state |
-| Frontend | Next.js 14 | Landing page + setup wizard + Mission Control dashboard |
-
-### Why Each Component Is Load-Bearing
-
-Remove MetaMask delegation → sub-agents have no budget cap, revocation doesn't propagate  
-Remove 1Shot → gas requires ETH, breaks the "zero crypto knowledge" UX  
-Remove Venice AI → competitive queries are logged by OpenAI (the exact problem SENTINEL solves)  
-Remove x402 → Scout can't buy external data without API keys (the key management problem returns)
-
----
-
-## Hackathon Track Alignment
-
-| Track | Prize | SENTINEL's submission |
-|---|---|---|
-| Best x402 + ERC-7710 | $3,000 | First project using x402 against **external paid data APIs** (not just Venice). Scout hits Serper/Diffbot paywalls and pays dynamically. |
-| Best Agent | $3,000 | Chief decomposes plain-English brief → spawns 3 sub-agents → synthesizes intelligence — zero human interaction after setup |
-| Best A2A Coordination | $3,000 | `Chief → Scout → Analyst → CFO` maps to real org structure. Revoke root permission → entire fleet defunded in one block |
-| Best 1Shot Relayer | $1,000 | Every agent tx through 1Shot (USDC gas). Webhook-first verification qualifies for $500 webhook bonus |
-
----
-
-## Color System
-
-SENTINEL uses the brand colors of the three sponsor platforms as functional signals:
-
-| Color | Hex | Signal |
-|---|---|---|
-| Background | `#0B0C14` | Deep navy — mission control |
-| Surface | `#131424` | Card/panel background |
-| Border | `#1E1F35` | Subtle definition |
-| **Accent Teal** | `#239AAA` | **1Shot** — agent activity, x402 payments |
-| **Accent Purple** | `#7B5FD4` | **Venice AI** — AI processing, private inference |
-| **Accent Orange** | `#E27625` | **MetaMask** — wallet state, permission events |
-| Success | `#22C55E` | Confirmed on-chain |
-| Warning | `#F59E0B` | Budget threshold approaching |
-| Danger | `#EF4444` | Anomaly / kill switch |
-| Mono Text | `#00E5CC` | Audit trail terminal |
-
----
-
-## Live Deployment
-
-**Network: Base Mainnet (Chain ID: 8453)** · Deployed: 2026-06-12
-
-| Component | Address / Endpoint |
-|---|---|
-| 1Shot Relayer Gateway | `https://relayer.1shotapi.com/relayer` |
-| Advanced Permissions Enforcer (ERC-7715) | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` (v1.6.0) |
-| Smart Account Prefix (EIP-7702) | `0xef0100` |
-| USDC on Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- MetaMask wallet with Base Mainnet configured
-- USDC on Base (minimum ~$5 for a trial week)
-
-### Install & Run
-
-```bash
-# Clone and install
-git clone <repo>
-cd Sentinal
-npm install
-
-# Configure environment
-cp .env.example .env
-# Fill in:
-#   VENICE_API_KEY=         (from venice.ai)
-#   ONESHOT_API_KEY=        (from 1shotapi.com)
-#   ONESHOT_WEBHOOK_SECRET= (from 1Shot dashboard)
-
-# Development server
-npm run dev
-# → http://localhost:3000
-
-# Run tests
-npm test
-
-# Production build
-npm run build
-npm start
-```
-
-### Environment Variables
-
-```bash
-# Required
-VENICE_API_KEY=your-venice-api-key
-ONESHOT_API_KEY=your-1shot-api-key
-ONESHOT_WEBHOOK_SECRET=your-webhook-secret
-
-# Network (defaults to Base mainnet)
-NEXT_PUBLIC_BASE_CHAIN_ID=8453
-NEXT_PUBLIC_USDC_ADDRESS=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-NEXT_PUBLIC_BASESCAN_URL=https://basescan.org/tx
-
-# Optional: 1Shot webhook endpoint (for production)
-ONESHOT_WEBHOOK_URL=https://yourdomain.com/api/webhooks/oneshot
-```
-
----
-
-## Step-by-Step Usage
-
-### Step 1 — Connect & Upgrade
-
-1. Open SENTINEL at `http://localhost:3000`
-2. Click **Launch SENTINEL** or **Connect MetaMask**
-3. Approve the MetaMask connection prompt
-4. The app calls `isDeleGator(address)` — checks if your wallet bytecode starts with `0xef0100`
-5. If it's a standard EOA: one transaction upgrades to a Smart Account via EIP-7702, gas sponsored by 1Shot in USDC
-6. You're redirected to the setup wizard
-
-### Step 2 — Design Your Brief
-
-1. **Step 1 of 3**: Write your business description and competitors (one per line)
-   ```
-   Business: I build developer tools. My product is a code review assistant.
-   
-   Competitors:
-   Copilot
-   Cursor
-   CodeRabbit
-   Codeium
-   ```
-
-2. **Step 2 of 3**: Select data sources
-   - Free: HackerNews, GitHub Trending, Product Hunt
-   - Paid via x402: Serper Search API (~$0.001/query), Diffbot (~$0.05/query), BuiltWith (~$0.02/query)
-
-3. **Step 3 of 3**: Set your weekly USDC budget with the slider ($5–$50)
-
-### Step 3 — Grant Permission & Launch
-
-1. Review the automatic budget split: Scout 30% / Analyst 60% / CFO 10%
-2. Click **⚡ Grant Permission & Launch Agents**
-3. One MetaMask popup: `wallet_grantPermissions` (ERC-7715)
-4. Confirm → agents start immediately → you're redirected to Mission Control
-
-**This is the last time you interact with the crypto stack.**
-
-### Step 4 — Mission Control Dashboard
-
-The dashboard has three panels:
-
-**Left panel — Agent Status**
-- Each agent shows a pulsing status dot (teal = active, grey = idle)
-- Current action text (e.g. "Querying GitHub Trending…")
-- Remaining budget for the week
-
-**Center panel — Intelligence Feed**
-- Intelligence cards arrive in real-time as agents complete synthesis
-- Each card shows: urgency badge, headline, summary, suggested action
-- At the bottom of each card: the **Delegation Trace** — exactly which agents ran, what each cost, with BaseScan links
-
-  ```
-  [Chief] → [Scout → SerperAPI $0.002 ↗] → [Analyst → Venice $0.004 ↗] → [You]
-  ```
-
-- Click any card to open the full detail modal with sources and complete delegation trail
-
-**Right panel — Audit Trail**
-- Terminal-style live log of every agent action
-- Every line has a timestamp, agent name (color-coded), action description, cost, and `[↗]` BaseScan link
-
-### Step 5 — Emergency Stop
-
-Click the red **[KILL]** button in the top-right. This:
-
-1. Calls `wallet_revokePermissions` on the root ERC-7715 context
-2. Posts to `/api/agents/revoke` to stop the server-side session
-3. All agent status dots turn grey simultaneously
-4. Banner appears: "All agents defunded. Your funds are safe."
-5. Any unspent USDC in the weekly budget remains in your wallet
+| **Account** | [MetaMask EIP-7702 SAK](https://docs.metamask.io/smart-accounts-kit/) | Upgrades user wallets to Smart Accounts with no native ETH gas requirements. |
+| **Permissions** | [ERC-7715](https://docs.metamask.io/smart-accounts-kit/concepts/advanced-permissions/) | Grants periodic weekly spending allowances in USDC. |
+| **Delegation** | [ERC-7710](https://docs.metamask.io/smart-accounts-kit/1.1.0/guides/delegation/create-redelegation/) | Slices the weekly budget among Scout, Analyst, and CFO sub-agents. |
+| **Payments** | [x402 Protocol](https://docs.metamask.io/smart-accounts-kit/development/guides/x402/buyer/delegations/) | Handshakes, pricing discoveries, and on-chain payments to paywalled API endpoints. |
+| **Gas Relayer** | [1Shot API Relayer](https://1shotapi.com/) | Executes Smart Account transactions with USDC gas-sponsorship. |
+| **Privacy AI** | [Venice AI API](https://docs.venice.ai/) | Executes LLM queries with no query logging or data surveillance. |
+| **Models** | `venice-uncensored-1.2` | Chief Orchestrator: Unfiltered task decomposition. |
+| **Models** | `deepseek-r1-671b` | Analyst Agent: Reasoning-focused synthesis of competitive data. |
+| **Blockchain** | Base Mainnet (8453) | Smart contracts, USDC tokens, and transaction settlements. |
+| **Database** | SQLite (`better-sqlite3`) | Persistent storage of sessions, state, audit logs, and x402 payment hashes. |
+| **Frontend** | Next.js 14 | Hybrid server-client framework hosting the wizard and dashboard. |
 
 ---
 
 ## Project Structure
 
-```
-Sentinal/
-│
-├── README.md
-├── package.json                       # Next.js 14, viem, openai, better-sqlite3
-├── sentinel.db                        # SQLite: audit events, cards, agent state, replay protection
-├── tests/
-│   └── run-tests.mjs                  # 41-test module test suite (node tests/run-tests.mjs)
-│
-├── src/                               # Main app (backend + app routes)
-│   ├── types.ts                       # Shared TypeScript interfaces
-│   │
-│   ├── agents/
-│   │   ├── chief/
-│   │   │   ├── orchestrator.ts        # Venice AI brief → TaskList (venice-uncensored-1.2)
-│   │   │   └── redelegate.ts          # ERC-7710 budget delegation (30/60/10 split)
-│   │   ├── scout/
-│   │   │   ├── agent.ts               # HN/GitHub/ProductHunt live HTTP fetches
-│   │   │   └── x402Discovery.ts       # 402 detection → X-PAYMENT header construction
-│   │   ├── analyst/
-│   │   │   └── synthesize.ts          # Venice AI (deepseek-r1-671b) → IntelligenceCard[]
-│   │   └── cfo/
-│   │       └── optimizeCompute.ts     # DIEM staking decision ($40/month break-even)
-│   │
-│   ├── app/
-│   │   ├── page.tsx                   # Landing page (SENTINEL-branded, wallet connect)
-│   │   ├── layout.tsx                 # Root layout + Google Fonts
-│   │   ├── globals.css                # Global design system (CSS variables, components)
-│   │   ├── setup/page.tsx             # 3-step onboarding wizard
-│   │   ├── dashboard/page.tsx         # Mission Control (3-panel: agents / feed / audit)
-│   │   └── api/
-│   │       ├── agents/start/          # POST: launches Chief agent, creates sub-delegations
-│   │       ├── agents/revoke/         # POST: kill switch (revoke permissions + stop session)
-│   │       ├── intelligence/          # GET: SSE stream (cards + audit events + agent state)
-│   │       ├── balance/               # GET: real-time USDC balance from Base RPC
-│   │       ├── check-account/         # GET: isDeleGator() bytecode check
-│   │       └── webhooks/oneshot/      # POST: 1Shot Ed25519-signed webhook handler
-│   │
-│   └── lib/
-│       ├── metamask/
-│       │   ├── accountUpgrade.ts      # EIP-7702 isDeleGator() check
-│       │   ├── permissions.ts         # ERC-7715 grantWeeklyBudget()
-│       │   └── revoke.ts              # revokePermissions() kill switch
-│       ├── oneshot/
-│       │   ├── relayer.ts             # relayer_getFeeData, relayer_send7710Transaction
-│       │   ├── submit.ts              # Transaction submission helpers
-│       │   └── verification.ts        # Webhook-first + exponential backoff polling fallback
-│       ├── venice/
-│       │   └── client.ts              # OpenAI-compatible Venice AI client
-│       ├── x402/
-│       │   ├── client.ts              # x402 HTTP client with ERC-7710 payment construction
-│       │   └── replayProtection.ts    # SQLite INSERT OR IGNORE unique payment hash guard
-│       ├── chain/
-│       │   ├── client.ts              # Viem public + wallet clients (Base mainnet)
-│       │   ├── balance.ts             # USDC balance queries
-│       │   ├── sessionKey.ts          # Ephemeral session key generation
-│       │   └── transactions.ts        # On-chain transaction helpers
-│       └── db/
-│           └── index.ts               # SQLite schema, audit events, cards, agent state CRUD
-│
-└── sentinal/                          # Marketing landing page (separate Next.js + Tailwind app)
-    └── components/                    # Hero, Navbar, Features, Stats, Pricing, Docs, CTA, Footer
-```
+This directory structure describes the entire workspace, mapping out files and subdirectories. Click the links below to open files directly.
+
+* **[package.json](file:///d:/Sentinal/package.json)** — Node.js dependencies (Next.js, Viem, Better-SQLite3, OpenAI API client).
+* **[sentinel.db](file:///d:/Sentinal/sentinel.db)** — SQLite local database for audit trail, feed cards, session state, and replay records.
+* **[tests/](file:///d:/Sentinal/tests/)** — Workspace testing directories.
+  * **[run-tests.mjs](file:///d:/Sentinal/tests/run-tests.mjs)** — Automated 41-module test suite.
+* **[src/](file:///d:/Sentinal/src/)** — App codebase directory.
+  * **[types.ts](file:///d:/Sentinal/src/types.ts)** — Shared TypeScript type interfaces.
+  * **[agents/](file:///d:/Sentinal/src/agents/)** — Autonomous Agent logic files.
+    * **[chief/](file:///d:/Sentinal/src/agents/chief/)** — Orchestrator module.
+      * **[orchestrator.ts](file:///d:/Sentinal/src/agents/chief/orchestrator.ts)** — Tasks and query plan generator using `venice-uncensored-1.2`.
+      * **[redelegate.ts](file:///d:/Sentinal/src/agents/chief/redelegate.ts)** — Budget redelegation logic (30% Scout, 60% Analyst, 10% CFO).
+    * **[scout/](file:///d:/Sentinal/src/agents/scout/)** — Data scraper module.
+      * **[agent.ts](file:///d:/Sentinal/src/agents/scout/agent.ts)** — RSS and live web search handlers.
+      * **[x402Discovery.ts](file:///d:/Sentinal/src/agents/scout/x402Discovery.ts)** — x402 client handler. Sets the `X-PAYMENT` header.
+    * **[analyst/](file:///d:/Sentinal/src/agents/analyst/)** — Synthesizer module.
+      * **[synthesize.ts](file:///d:/Sentinal/src/agents/analyst/synthesize.ts)** — Privately digests scraped facts into clean reports via `deepseek-r1-671b`.
+    * **[cfo/](file:///d:/Sentinal/src/agents/cfo/)** — Finance optimizer module.
+      * **[optimizeCompute.ts](file:///d:/Sentinal/src/agents/cfo/optimizeCompute.ts)** — DIEM token staking logic checking Venice cost thresholds.
+  * **[app/](file:///d:/Sentinal/src/app/)** — Next.js routing and styling.
+    * **[page.tsx](file:///d:/Sentinal/src/app/page.tsx)** — Wallet connection and landing page.
+    * **[layout.tsx](file:///d:/Sentinal/src/app/layout.tsx)** — Root styling layout injecting google display fonts.
+    * **[globals.css](file:///d:/Sentinal/src/app/globals.css)** — Styling parameters.
+    * **[setup/](file:///d:/Sentinal/src/app/setup/)** — Onboarding Wizard page.
+      * **[page.tsx](file:///d:/Sentinal/src/app/setup/page.tsx)** — 3-step setup form (Brief -> Sources -> Budget).
+    * **[dashboard/](file:///d:/Sentinal/src/app/dashboard/)** — Live Mission Control interface.
+      * **[page.tsx](file:///d:/Sentinal/src/app/dashboard/page.tsx)** — 3-panel UI grid showing active statuses, cards, and events.
+    * **[api/](file:///d:/Sentinal/src/app/api/)** — Backend server endpoints.
+      * **[agents/start/route.ts](file:///d:/Sentinal/src/app/api/agents/start/route.ts)** — POST: Initializes Chief Agent and launches the workforce.
+      * **[agents/revoke/route.ts](file:///d:/Sentinal/src/app/api/agents/revoke/route.ts)** — POST: Revokes ERC-7715 allowances and terminates agent sessions.
+      * **[intelligence/route.ts](file:///d:/Sentinal/src/app/api/intelligence/route.ts)** — GET: SSE stream delivering card and audit log updates.
+      * **[balance/route.ts](file:///d:/Sentinal/src/app/api/balance/route.ts)** — GET: Queries user USDC balance from the Base RPC node.
+      * **[check-account/route.ts](file:///d:/Sentinal/src/app/api/check-account/route.ts)** — GET: Bytecode inspection routing.
+      * **[webhooks/oneshot/route.ts](file:///d:/Sentinal/src/app/api/webhooks/oneshot/route.ts)** — POST: Webhook receiver processing Ed25519-signed 1Shot confirmations.
+  * **[lib/](file:///d:/Sentinal/src/lib/)** — Library utilities.
+    * **[metamask/](file:///d:/Sentinal/src/lib/metamask/)** — MetaMask Smart Accounts Kit wrappers.
+      * **[accountUpgrade.ts](file:///d:/Sentinal/src/lib/metamask/accountUpgrade.ts)** — EIP-7702 detector utilities.
+      * **[permissions.ts](file:///d:/Sentinal/src/lib/metamask/permissions.ts)** — ERC-7715 periodic allowance creators.
+      * **[revoke.ts](file:///d:/Sentinal/src/lib/metamask/revoke.ts)** — Allowance revocation handlers.
+    * **[oneshot/](file:///d:/Sentinal/src/lib/oneshot/)** — 1Shot API transaction relayers.
+      * **[relayer.ts](file:///d:/Sentinal/src/lib/oneshot/relayer.ts)** — Encodes JSON-RPC queries.
+      * **[submit.ts](file:///d:/Sentinal/src/lib/oneshot/submit.ts)** — Bundle compiler helper functions.
+      * **[verification.ts](file:///d:/Sentinal/src/lib/oneshot/verification.ts)** — Dual status listener matching webhooks and RPC polling fallbacks.
+    * **[venice/](file:///d:/Sentinal/src/lib/venice/)** — Venice AI connector wrappers.
+      * **[client.ts](file:///d:/Sentinal/src/lib/venice/client.ts)** — Configures API endpoints and header arrays.
+    * **[x402/](file:///d:/Sentinal/src/lib/x402/)** — x402 payment processor.
+      * **[client.ts](file:///d:/Sentinal/src/lib/x402/client.ts)** — Payment header encoders.
+      * **[replayProtection.ts](file:///d:/Sentinal/src/lib/x402/replayProtection.ts)** — SQLite insert guard validating unique hashes.
+    * **[chain/](file:///d:/Sentinal/src/lib/chain/)** — Viem blockchain connectors.
+      * **[client.ts](file:///d:/Sentinal/src/lib/chain/client.ts)** — Client initializers.
+      * **[balance.ts](file:///d:/Sentinal/src/lib/chain/balance.ts)** — Reads wallet balances.
+      * **[sessionKey.ts](file:///d:/Sentinal/src/lib/chain/sessionKey.ts)** — Temporary session key storage utilities.
+      * **[transactions.ts](file:///d:/Sentinal/src/lib/chain/transactions.ts)** — On-chain calldata encoders for USDC transfers.
+    * **[db/](file:///d:/Sentinal/src/lib/db/)** — Persistent database.
+      * **[index.ts](file:///d:/Sentinal/src/lib/db/index.ts)** — Schema setup, query handlers, and data writers.
+* **[sentinal/](file:///d:/Sentinal/sentinal/)** — Marketing website directory.
+  * **[app/globals.css](file:///d:/Sentinal/sentinal/app/globals.css)** — Global styles for the Tailwind landing page.
+  * **[components/features-section.tsx](file:///d:/Sentinal/sentinal/components/features-section.tsx)** — React UI elements for displaying project features.
+
+---
+
+## Live Deployment Address Registry
+
+These endpoints and contracts are deployed on the **Base Mainnet (Chain ID: 8453)**:
+
+| Component | Target Address / Endpoint | Version / Notes |
+|---|---|---|
+| **1Shot Relayer Gateway** | `https://relayer.1shotapi.com/relayer` | Production API Gateway |
+| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
+| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
+| **USDC Token Contract** | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | USDC contract deployed on Base |
 
 ---
 
 ## Test Report
 
-Run `npm test` to execute all 41 tests:
+Run `npm test` to execute the automated test suite. The system contains 41 unit and integration tests checking all agent logic:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -602,59 +475,37 @@ Run `npm test` to execute all 41 tests:
 
 ---
 
-## Protocols & Standards
-
-| Protocol | Role |
-|---|---|
-| **EIP-7702** | Upgrades EOA to MetaMask Smart Account (one-time, gas-free) |
-| **ERC-7715** | User grants scoped weekly USDC spend permission to Chief Agent |
-| **ERC-7710** | Chief redelegates budget slices to Scout, Analyst, CFO |
-| **x402** | HTTP-native micropayments — Scout pays paywalled external data APIs |
-| **1Shot Relayer** | Gas abstraction — all transactions paid in USDC, no ETH anywhere |
-| **Venice AI** | Private LLM inference — zero logging, DIEM staking for cost optimization |
-
----
-
 ## Key Implementation Patterns
 
-### ERC-7710 Budget Enforcement (not a runtime check)
+### 1. ERC-7710 Budget Delegation
+Enforced cryptographically at the child delegation level:
 
 ```typescript
 // Budget allocation is cryptographically enforced at the delegation level
-const scoutContext  = deriveChildContext(rootCtx, 'scout',   weeklyBudget * 0.30);
+const scoutContext   = deriveChildContext(rootCtx, 'scout',   weeklyBudget * 0.30);
 const analystContext = deriveChildContext(rootCtx, 'analyst', weeklyBudget * 0.60);
-const cfoContext    = deriveChildContext(rootCtx, 'cfo',     weeklyBudget * 0.10);
-// Each child context is signed and linked to parent — cannot exceed its cap
+const cfoContext     = deriveChildContext(rootCtx, 'cfo',     weeklyBudget * 0.10);
+// Each child context is signed and linked to the parent — it cannot exceed its budget cap.
 ```
 
-### Webhook-First Verification (1Shot)
-
-```typescript
-async verify(txHash: string): Promise<Transaction> {
-  return Promise.race([
-    new Promise<Transaction>((resolve) =>        // Primary: Ed25519 webhook
-      this.pendingTxns.set(txHash, resolve)),
-    this.pollWithBackoff(txHash),                 // Fallback: exponential backoff
-  ]);
-}
-```
-
-### x402 Agentic Discovery
+### 2. x402 Micropayment Handshake
+Autonomous buyer handshake routing when hitting a data paywall:
 
 ```typescript
 const response = await fetch(endpoint);         // Cold hit — no hardcoded price
 if (response.status === 402) {
   const { amount, token, recipient, chainId } = await response.json();
-  const cost = Number(amount) / 1_000_000;      // micro-USDC → USDC
+  const cost = Number(amount) / 1_000_000;      // Convert micro-USDC to USDC
   if (cost > remainingBudget) throw new Error('Over budget');
   if (cost > 0.10) throw new Error('Per-query safety limit exceeded');
   const paidResponse = await fetch(endpoint, {
-    headers: { 'X-PAYMENT': paymentHeader },     // ERC-7710 delegation-backed
+    headers: { 'X-PAYMENT': paymentHeader },     // ERC-7710 delegation-backed payment header
   });
 }
 ```
 
-### SQLite Replay Protection (survives restarts)
+### 3. SQLite Replay Protection
+Prevents replay attacks across restarts by recording hashes in SQLite:
 
 ```typescript
 const inserted = await db.run(
@@ -662,19 +513,7 @@ const inserted = await db.run(
   [paymentHash, new Date().toISOString()]
 );
 if (inserted.changes === 0) throw new Error('Payment already processed');
-// ↑ Database-backed: survives PM2 restarts unlike in-memory Set
-```
-
-### CFO DIEM Staking Logic
-
-```typescript
-const projectedMonthlySpend = weeklyX402Spend * 4.33;
-if (projectedMonthlySpend > 40) {
-  // USDC → VVV (Aerodrome DEX on Base)
-  // VVV → sVVV (4-week stake)
-  // sVVV → DIEM mint (each = $1/day inference in perpetuity)
-  // All via 1Shot relayer — no ETH required
-}
+// ↑ Database-backed: survives PM2 restarts unlike in-memory Sets
 ```
 
 ---
