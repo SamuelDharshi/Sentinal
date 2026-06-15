@@ -43,7 +43,13 @@ function isIgnored(file) {
     /^sentinal\/node_modules\//,
     /^sentinal\/\.next\//,
     /^sentinal\/\.env$/,
-    /^package-lock\.json$/,
+    /^sentinal\/lib\/chain\/chain\//,
+    /^sentinal\/lib\/db\/db\//,
+    /^sentinal\/lib\/metamask\/metamask\//,
+    /^sentinal\/lib\/oneshot\/oneshot\//,
+    /^sentinal\/lib\/venice\/venice\//,
+    /^sentinal\/lib\/x402\/x402\//,
+    /^sentinal\/next-env\.d\.ts$/,
   ];
   if (file === '.env.example') return false;
   return ignored.some((p) => p.test(file));
@@ -100,7 +106,17 @@ for (let i = 0; i < batches.length; i++) {
   console.log(`\nCommit ${i + 1}/${batches.length}: ${msg} (${batch.lines} lines, ${batch.files.length} files)`);
 
   for (const f of batch.files) {
-    execSync(`git add "${f.replace(/"/g, '\\"')}"`, { cwd: ROOT, stdio: 'inherit' });
+    try {
+      execSync(`git add "${f.replace(/"/g, '\\"')}"`, { cwd: ROOT, stdio: 'pipe' });
+    } catch {
+      console.log(`  skipped (ignored): ${f}`);
+    }
+  }
+
+  const staged = execSync('git diff --cached --name-only', { cwd: ROOT, encoding: 'utf8' }).trim();
+  if (!staged) {
+    console.log('  nothing to commit, skipping');
+    continue;
   }
 
   const body = `${msg}\n\nFiles: ${batch.files.length}, lines: ~${batch.lines}`;
