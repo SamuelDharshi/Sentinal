@@ -50,7 +50,7 @@ SENTINEL makes every solo operator as intelligence-rich as a venture-backed star
 
 ### Core Architecture Pillars
 
-1. **True Autonomy**: Setup takes 5 minutes. The user connects their MetaMask wallet once, upgrade to a smart account, writes an intelligence brief, sets a weekly budget, and never touches the app again. The system runs 24/7 in the background.
+1. **True Autonomy**: Setup takes 5 minutes. The user connects their MetaMask wallet once, upgrades to a smart account, writes an intelligence brief, sets a weekly budget, and never touches the app again. The system runs 24/7 in the background.
 2. **Absolute Privacy**: All intellectual synthesis runs on Venice AI's zero-logging API. Unlike OpenAI or Google, Venice does not log search queries or model inputs, ensuring competitive queries stay private.
 3. **On-chain Verifiability**: Every action taken by the agents (purchasing data or calling Venice APIs) executes via smart account delegations and produces a BaseScan transaction link, providing an immutable audit trail.
 4. **Agentic Discovery (x402)**: The Scout Agent does not have hardcoded API keys. When it encounters paywalled data provider endpoints, it handles the standard `402 Payment Required` HTTP response, parses the payment metadata, and dynamically pays for the query in USDC using its delegated ERC-7710 budget, completing the transaction via the 1Shot gasless relayer.
@@ -58,7 +58,82 @@ SENTINEL makes every solo operator as intelligence-rich as a venture-backed star
 
 ---
 
-## How the App Works
+## Technical Architecture & System Layout
+
+SENTINEL operates as a decoupled multi-agent intelligence system. The frontend communicates with MetaMask and the 1Shot relayer, writes setup variables to the local SQLite database, and streams real-time updates from the background agent execution cycles via Server-Sent Events (SSE).
+
+### Architectural Block Diagram
+```
+  +─────────────────────────────────────────────────────────────+
+  │                      CLIENT / FRONTEND                      │
+  │  +─────────────────────────+     +───────────────────────+  │
+  │  │   MetaMask Wallet SAK   │     │  Next.js Onboarding   │  │
+  │  │  Upgrade EIP-7702 / sign│     │   Setup Wizard & UI   │  │
+  │  +────────────┬────────────+     +───────────┬───────────+  │
+  +───────────────┼──────────────────────────────┼──────────────+
+                  │ (Gasless EIP-7702 Upgrade)   │ (DB Write)
+                  v                              v
+  +────────────────────────────+     +───────────────────────+
+  │   1Shot Relayer Gateway    │     │   Local SQLite DB     │
+  │  (USDC Sponsored Gasless)  │     │(Sessions, State, Feed)│
+  +───────────────┬────────────+     +───────────▲───────────+
+                  │                              │
+                  │ (Relays Transactions)        │ (Card Sync)
+                  ▼                              │
+  +────────────────────────────+     +───────────┴───────────+
+  │    Base Sepolia Network    │     │  CHIEF ORCHESTRATOR   │
+  │(State updates & allowances)│     │  (Venice AI Manager)  │
+  +────────────────────────────+     +─────┬───────────┬─────+
+                                           │           │
+                    +──────────────────────+           +──────────────────────+
+                    │ (Budget Delegation)                 (Budget Delegation) │
+                    ▼                                                         ▼
+  +────────────────────────────────────+             +────────────────────────┼
+  │            SCOUT AGENT             │             │      ANALYST AGENT     │
+  │    - Scrapes RSS & Serper API      │             │ - Reasoning deepseek-r1│
+  │    - x402 Micropayments via SAK    │             │ - Private synthesis    │
+  +─────────────────┬──────────────────+             +────────────┬───────────+
+                    │                                             │
+                    v                                             v
+  +────────────────────────────────────+             +────────────────────────+
+  │             CFO AGENT              │             │       Venice AI        │
+  │    - Monitors weekly spend logs    │             │ (Private LLM inference)│
+  │    - Swaps USDC to VVV & stakes    │             │ (Zero query logging)   │
+  +────────────────────────────────────+             +────────────────────────+
+```
+
+### System Flowchart
+```mermaid
+graph TB
+    subgraph Client [Client / Frontend]
+        A[MetaMask Extension] -->|Upgrade EIP-7702 / Sign Permissions| B[Next.js App UI]
+        B -->|Intelligence Brief & Config| C[(SQLite DB)]
+    end
+    subgraph Relayer [1Shot Relayer]
+        D[1Shot Gas Relayer] -->|USDC Sponsored Transactions| E[Base Sepolia Network]
+    end
+    subgraph AgentSystem [Autonomous Agent Workforce]
+        F[Chief Agent] -->|ERC-7710 Budget Delegation| G[Scout Agent]
+        F -->|ERC-7710 Budget Delegation| H[Analyst Agent]
+        F -->|ERC-7710 Budget Delegation| I[CFO Agent]
+        
+        G -->|Scrapes RSS & Paid APIs| J[HN / GitHub / Serper]
+        J -->|x402 Micropayments| D
+        
+        H -->|Synthesizes Raw Data| K[Venice AI deepseek-r1]
+        K -->|Intelligence Cards| C
+        
+        I -->|Monitors Spend| L[Aerodrome DEX swap]
+        L -->|Stakes VVV to sVVV| M[DIEM Minting]
+    end
+    
+    E -->|Transaction Events| D
+    D -->|Ed25519 Signed Webhook| B
+```
+
+---
+
+## How the App Works — Subsystem Workflows
 
 ### 1. MetaMask Smart Account Upgrade (EIP-7702)
 Standard External Owned Accounts (EOAs) cannot delegate permissions or execute complex multi-agent budgets autonomously. SENTINEL upgrades the user's EOA to a hybrid Smart Account using EIP-7702. The upgrade transaction gas is sponsored by the 1Shot Relayer in USDC, requiring no native ETH in the user's wallet.
@@ -111,7 +186,7 @@ When the Scout Agent scrapes the web, it queries data APIs. If an API is paywall
            |<--- 4. 200 OK + Payload -------------------------------|
 ```
 
-### 4. CFO Staking Decision tree
+### 4. CFO Staking Decision Tree
 Every week, the CFO Agent reviews the running expense logs. If the Venice AI inference cost projects to over $40/month, the CFO swaps USDC for VVV on Aerodrome, locks sVVV for 4 weeks, and mints Venice DIEM tokens. This secures free daily inference limits for the Analyst Agent:
 
 ```
@@ -138,7 +213,7 @@ Every week, the CFO Agent reviews the running expense logs. If the Venice AI inf
                  (Mint perpetual credits)
 ```
 
-### 5. Mission Control UI Dashboard
+### 5. Mission Control UI Dashboard Mockup
 The user interacts with a 3-panel realtime terminal mapping agent execution, raw feeds, and on-chain transactions:
 
 ```
@@ -173,7 +248,7 @@ The user interacts with a 3-panel realtime terminal mapping agent execution, raw
 The diagram below details the entire flow of the application, showing onboarding, setup, the core loops of the Scout, Analyst, and CFO agents, and the revocation kill switch.
 
 ```mermaid
-sequence diagram
+sequenceDiagram
     autonumber
     actor User
     participant MetaMask SAK
@@ -254,6 +329,150 @@ sequence diagram
 
 ---
 
+## Core Code Snippets & Implementation Details
+
+Below are the load-bearing implementation snippets mapping how MetaMask Smart Accounts Kit, 1Shot Relayer, Venice AI API, and x402 Micropayments are configured inside this project:
+
+### 1. MetaMask EIP-7702 Smart Account Upgrade
+This upgrades standard wallets (EOAs) to hybrid Smart Accounts in one transaction, utilizing 1Shot gas sponsorship:
+```typescript
+// src/lib/metamask/accountUpgrade.ts
+import { getSmartAccountsEnvironment, Implementation } from "@metamask/smart-accounts-kit";
+import { createWalletClient, custom } from "viem";
+import { baseSepolia } from "viem/chains";
+
+export async function upgradeToSmartAccount() {
+  const walletClient = createWalletClient({
+    chain: baseSepolia,
+    transport: custom(window.ethereum),
+  });
+
+  // Upgrade standard account to Smart Account (gas sponsored by 1Shot)
+  const env = getSmartAccountsEnvironment({
+    chain: baseSepolia,
+    implementation: Implementation.Hybrid,
+  });
+
+  return env;
+}
+```
+
+### 2. ERC-7715 Budget Granting (Weekly Allowance)
+Allows the user to approve a weekly budget in USDC without signing individual agent transactions:
+```typescript
+// src/lib/metamask/permissions.ts
+import { erc7715ProviderActions } from "@metamask/smart-accounts-kit";
+import { baseSepolia } from "viem/chains";
+
+export async function grantWeeklyBudget(
+  walletClient: any,
+  sessionAccount: `0x${string}`,
+  weeklyUSDC: bigint // USDC amount in micro-units (6 decimals)
+) {
+  const permission = await walletClient.extend(erc7715ProviderActions()).grantPermissions({
+    chainId: baseSepolia.id,
+    permissions: [
+      {
+        type: "erc20-token-periodic",
+        token: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC Sepolia
+        allowance: weeklyUSDC,
+        period: 604800, // 7 days (seconds)
+        sessionAccount,
+        isAdjustmentAllowed: false,
+        justification: "SENTINEL weekly intelligence research agent budget",
+        expiry: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30-day context
+      },
+    ],
+  });
+  return permission;
+}
+```
+
+### 3. ERC-7710 Budget Delegation Slicing (Agent-to-Agent)
+The Chief Orchestrator decomposes the budget context and allocates micro-budgets to sub-agents:
+```typescript
+// src/agents/chief/redelegate.ts
+import { createDelegation } from "@metamask/smart-accounts-kit/experimental";
+
+export async function createSubAgentDelegations(
+  parentPermissionContext: PermissionContext,
+  budgetAllocation: { scout: bigint; analyst: bigint; cfo: bigint }
+) {
+  const scoutDelegation = await createDelegation({
+    parentPermissionContext,
+    caveat: { type: "Erc20TransferAmount", value: budgetAllocation.scout },
+    delegate: SCOUT_AGENT_ADDRESS,
+  });
+
+  const analystDelegation = await createDelegation({
+    parentPermissionContext,
+    caveat: { type: "Erc20TransferAmount", value: budgetAllocation.analyst },
+    delegate: ANALYST_AGENT_ADDRESS,
+  });
+
+  const cfoDelegation = await createDelegation({
+    parentPermissionContext,
+    caveat: { type: "Erc20TransferAmount", value: budgetAllocation.cfo },
+    delegate: CFO_AGENT_ADDRESS,
+  });
+
+  return { scoutDelegation, analystDelegation, cfoDelegation };
+}
+```
+
+### 4. x402 Micropayment Client Handshake
+Scout Agent discovers the pricing parameters of a paywalled data API and submits a signed payment:
+```typescript
+// src/agents/scout/x402Discovery.ts
+export async function fetchPaywalledData(endpoint: string, query: string) {
+  const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+
+  if (response.status === 402) {
+    const { amount, token, recipient, chainId } = await response.json();
+    const cost = Number(amount) / 1_000_000; // micro-USDC -> USDC
+
+    if (cost > remainingBudget) throw new Error("Scout budget limit exceeded");
+
+    // Construct delegation payment header using client SDK
+    const paymentHeader = await x402Client.createPaymentHeader({
+      amount,
+      token,
+      recipient,
+      chainId,
+    });
+
+    // Retry request with the payment header token
+    const paidResponse = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`, {
+      headers: { "X-PAYMENT": paymentHeader },
+    });
+
+    return paidResponse.json();
+  }
+  return response.json();
+}
+```
+
+### 5. CFO Agent Cost Evaluation & Staking
+Checks monthly expenditure, executes a token swap, and mints Venice DIEM tokens:
+```typescript
+// src/agents/cfo/optimizeCompute.ts
+export async function evaluateComputeStrategy(weeklySpend: number) {
+  const projectedMonthlySpend = weeklySpend * 4.33;
+  const stakingThreshold = 40.0; // Break-even cost target
+
+  if (projectedMonthlySpend > stakingThreshold) {
+    // 1. Swap USDC -> VVV (Aerodrome Base Sepolia)
+    // 2. Lock VVV -> sVVV
+    // 3. Lock sVVV -> mint DIEM (Zero-marginal-cost LLM query limits)
+    return { action: "stake", diemToMint: Math.ceil(projectedMonthlySpend) };
+  }
+
+  return { action: "payAsYouGo" };
+}
+```
+
+---
+
 ## Detailed Step-by-Step Usage Instructions
 
 ### Step 1: Wallet Connection & Account Upgrade
@@ -308,21 +527,30 @@ The dashboard is split into three main modules:
 
 ---
 
-## Technology Stack
+## Deployed Address Registry
 
-| Layer | Technology | Purpose |
+SENTINEL supports deployment on both **Base Sepolia Testnet (Chain ID: 84532)** and **Base Mainnet (Chain ID: 8453)**:
+
+### Base Sepolia (Testnet) Deployment
+This matches the configuration defined in the local [.env](file:///d:/Sentinal/.env) file:
+
+| Component | Target Address / Endpoint | Version / Notes |
 |---|---|---|
-| **Account** | [MetaMask EIP-7702 SAK](https://docs.metamask.io/smart-accounts-kit/) | Upgrades user wallets to Smart Accounts with no native ETH gas requirements. |
-| **Permissions** | [ERC-7715](https://docs.metamask.io/smart-accounts-kit/concepts/advanced-permissions/) | Grants periodic weekly spending allowances in USDC. |
-| **Delegation** | [ERC-7710](https://docs.metamask.io/smart-accounts-kit/1.1.0/guides/delegation/create-redelegation/) | Slices the weekly budget among Scout, Analyst, and CFO sub-agents. |
-| **Payments** | [x402 Protocol](https://docs.metamask.io/smart-accounts-kit/development/guides/x402/buyer/delegations/) | Handshakes, pricing discoveries, and on-chain payments to paywalled API endpoints. |
-| **Gas Relayer** | [1Shot API Relayer](https://1shotapi.com/) | Executes Smart Account transactions with USDC gas-sponsorship. |
-| **Privacy AI** | [Venice AI API](https://docs.venice.ai/) | Executes LLM queries with no query logging or data surveillance. |
-| **Models** | `venice-uncensored-1.2` | Chief Orchestrator: Unfiltered task decomposition. |
-| **Models** | `deepseek-r1-671b` | Analyst Agent: Reasoning-focused synthesis of competitive data. |
-| **Blockchain** | Base Mainnet (8453) | Smart contracts, USDC tokens, and transaction settlements. |
-| **Database** | SQLite (`better-sqlite3`) | Persistent storage of sessions, state, audit logs, and x402 payment hashes. |
-| **Frontend** | Next.js 14 | Hybrid server-client framework hosting the wizard and dashboard. |
+| **1Shot Relayer Gateway** | `https://relayer.1shotapi.dev/relayers` | Testnet Relay Endpoint |
+| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
+| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
+| **USDC Token Contract** | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | Deployed USDC token (Sepolia) |
+| **DEX Router (Aerodrome)** | `0xe592427a0aece92de3edee1f18e0157c05861564` | Testnet Swap Interface |
+
+### Base Mainnet Deployment
+
+| Component | Target Address / Endpoint | Version / Notes |
+|---|---|---|
+| **1Shot Relayer Gateway** | `https://relayer.1shotapi.com/relayer` | Production API Gateway |
+| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
+| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
+| **USDC Token Contract** | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | USDC contract deployed on Base |
+| **DEX Router (Aerodrome)** | `0xe592427a0aece92de3edee1f18e0157c05861564` | Aerodrome Swap Router |
 
 ---
 
@@ -365,7 +593,7 @@ This directory structure describes the entire workspace, mapping out files and s
   * **[lib/](file:///d:/Sentinal/src/lib/)** — Library utilities.
     * **[metamask/](file:///d:/Sentinal/src/lib/metamask/)** — MetaMask Smart Accounts Kit wrappers.
       * **[accountUpgrade.ts](file:///d:/Sentinal/src/lib/metamask/accountUpgrade.ts)** — EIP-7702 detector utilities.
-      * **[permissions.ts](file:///d:/Sentinal/src/lib/metamask/permissions.ts)** — ERC-7715 periodic allowance creators.
+      * **[permissions.ts](file:///d:/Sentinal/src/lib/metamask/permissions.ts)** — Periodic allowance creators.
       * **[revoke.ts](file:///d:/Sentinal/src/lib/metamask/revoke.ts)** — Allowance revocation handlers.
     * **[oneshot/](file:///d:/Sentinal/src/lib/oneshot/)** — 1Shot API transaction relayers.
       * **[relayer.ts](file:///d:/Sentinal/src/lib/oneshot/relayer.ts)** — Encodes JSON-RPC queries.
@@ -386,19 +614,6 @@ This directory structure describes the entire workspace, mapping out files and s
 * **[sentinal/](file:///d:/Sentinal/sentinal/)** — Marketing website directory.
   * **[app/globals.css](file:///d:/Sentinal/sentinal/app/globals.css)** — Global styles for the Tailwind landing page.
   * **[components/features-section.tsx](file:///d:/Sentinal/sentinal/components/features-section.tsx)** — React UI elements for displaying project features.
-
----
-
-## Live Deployment Address Registry
-
-These endpoints and contracts are deployed on the **Base Mainnet (Chain ID: 8453)**:
-
-| Component | Target Address / Endpoint | Version / Notes |
-|---|---|---|
-| **1Shot Relayer Gateway** | `https://relayer.1shotapi.com/relayer` | Production API Gateway |
-| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
-| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
-| **USDC Token Contract** | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | USDC contract deployed on Base |
 
 ---
 
@@ -475,46 +690,16 @@ Run `npm test` to execute the automated test suite. The system contains 41 unit 
 
 ---
 
-## Key Implementation Patterns
+## Protocols & Standards Reference
 
-### 1. ERC-7710 Budget Delegation
-Enforced cryptographically at the child delegation level:
-
-```typescript
-// Budget allocation is cryptographically enforced at the delegation level
-const scoutContext   = deriveChildContext(rootCtx, 'scout',   weeklyBudget * 0.30);
-const analystContext = deriveChildContext(rootCtx, 'analyst', weeklyBudget * 0.60);
-const cfoContext     = deriveChildContext(rootCtx, 'cfo',     weeklyBudget * 0.10);
-// Each child context is signed and linked to the parent — it cannot exceed its budget cap.
-```
-
-### 2. x402 Micropayment Handshake
-Autonomous buyer handshake routing when hitting a data paywall:
-
-```typescript
-const response = await fetch(endpoint);         // Cold hit — no hardcoded price
-if (response.status === 402) {
-  const { amount, token, recipient, chainId } = await response.json();
-  const cost = Number(amount) / 1_000_000;      // Convert micro-USDC to USDC
-  if (cost > remainingBudget) throw new Error('Over budget');
-  if (cost > 0.10) throw new Error('Per-query safety limit exceeded');
-  const paidResponse = await fetch(endpoint, {
-    headers: { 'X-PAYMENT': paymentHeader },     // ERC-7710 delegation-backed payment header
-  });
-}
-```
-
-### 3. SQLite Replay Protection
-Prevents replay attacks across restarts by recording hashes in SQLite:
-
-```typescript
-const inserted = await db.run(
-  `INSERT OR IGNORE INTO processed_payments (hash, processed_at) VALUES (?, ?)`,
-  [paymentHash, new Date().toISOString()]
-);
-if (inserted.changes === 0) throw new Error('Payment already processed');
-// ↑ Database-backed: survives PM2 restarts unlike in-memory Sets
-```
+| Protocol | Role |
+|---|---|
+| **EIP-7702** | Upgrades EOA to Smart Account (gas-free and sponsored) |
+| **ERC-7715** | User grants weekly USDC budget limits to Chief Orchestrator |
+| **ERC-7710** | Chief redelegates spending balances to sub-agents |
+| **x402** | Micropayments schema—Scout Agent pays for paywalled endpoints via the `X-PAYMENT` header |
+| **1Shot Relayer** | Gas abstraction—relays signed intents on-chain paying gas in USDC |
+| **Venice AI** | Zero-logging private reasoning models and DIEM compute tokens |
 
 ---
 
