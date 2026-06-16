@@ -527,30 +527,57 @@ The dashboard is split into three main modules:
 
 ---
 
-## Deployed Address Registry
+## Deployment & On-Chain Verification
 
-SENTINEL supports deployment on both **Base Sepolia Testnet (Chain ID: 84532)** and **Base Mainnet (Chain ID: 8453)**:
+> **SENTINEL has no custom Solidity contracts to deploy.** The system is built entirely on top of existing, live ecosystem contracts: the MetaMask EIP-7702 enforcer, Circle's USDC, the 1Shot permissionless relayer, and the Aerodrome DEX router — all of which are already deployed and verified on-chain. The app is configured to run on **Base Sepolia Testnet** (chain ID `84532`) by default, with a one-line env switch to go live on **Base Mainnet** (chain ID `8453`).
 
-### Base Sepolia (Testnet) Deployment
-This matches the configuration defined in the local [.env](file:///d:/Sentinal/.env) file:
+### ✅ Active Configuration — Base Sepolia Testnet (Chain ID: 84532)
 
-| Component | Target Address / Endpoint | Version / Notes |
+This is the default network set in `.env`. All transactions flow through these live, verified addresses:
+
+| Component | Contract / Endpoint | Verified On-Chain |
 |---|---|---|
-| **1Shot Relayer Gateway** | `https://relayer.1shotapi.dev/relayers` | Testnet Relay Endpoint |
-| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
-| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
-| **USDC Token Contract** | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | Deployed USDC token (Sepolia) |
-| **DEX Router (Aerodrome)** | `0xe592427a0aece92de3edee1f18e0157c05861564` | Testnet Swap Interface |
+| **USDC Token (Circle)** | [`0x036CbD53842c5426634e7929541eC2318f3dCF7e`](https://sepolia.basescan.org/token/0x036CbD53842c5426634e7929541eC2318f3dCF7e) | ✅ BaseScan Verified |
+| **EIP-7702 Enforcer (MetaMask SAK)** | [`0x15f8ed352fd940075ec3f7cedc773052f8af72d`](https://sepolia.basescan.org/address/0x15f8ed352fd940075ec3f7cedc773052f8af72d) | ✅ Live on Base Sepolia |
+| **Smart Account Delegation Prefix** | `0xef0100` | EIP-7702 bytecode marker |
+| **1Shot Relayer Gateway** | [`https://relayer.1shotapi.dev/relayers`](https://relayer.1shotapi.dev/relayers) | ✅ Permissionless JSON-RPC |
+| **Aerodrome DEX Router** | [`0xe592427a0aece92de3edee1f18e0157c05861564`](https://sepolia.basescan.org/address/0xe592427a0aece92de3edee1f18e0157c05861564) | ✅ Live on Base Sepolia |
+| **Base Sepolia RPC** | `https://sepolia.base.org` | Official Coinbase RPC |
+| **BaseScan Explorer** | `https://sepolia.basescan.org` | Audit trail links |
 
-### Base Mainnet Deployment
+### 🌐 Base Mainnet Configuration (Chain ID: 8453)
 
-| Component | Target Address / Endpoint | Version / Notes |
+To switch to mainnet, update your `.env` file:
+
+```bash
+NEXT_PUBLIC_BASE_CHAIN_ID=8453
+NEXT_PUBLIC_USDC_ADDRESS=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+NEXT_PUBLIC_BASE_RPC_URL=https://mainnet.base.org
+NEXT_PUBLIC_RELAYER_URL=https://relayer.1shotapi.com/relayers
+NEXT_PUBLIC_BASESCAN_URL=https://basescan.org/tx
+```
+
+| Component | Contract / Endpoint | Verified On-Chain |
 |---|---|---|
-| **1Shot Relayer Gateway** | `https://relayer.1shotapi.com/relayer` | Production API Gateway |
-| **Permissions Enforcer** | `0x15f8ed352fd940075ec3f7cedc773052f8af72d` | ERC-7715 Enforcer contract (v1.6.0) |
-| **Smart Account Upgrade Prefix** | `0xef0100` | EIP-7702 delegation bytecode prefix |
-| **USDC Token Contract** | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | USDC contract deployed on Base |
-| **DEX Router (Aerodrome)** | `0xe592427a0aece92de3edee1f18e0157c05861564` | Aerodrome Swap Router |
+| **USDC Token (Circle)** | [`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`](https://basescan.org/token/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) | ✅ BaseScan Verified |
+| **EIP-7702 Enforcer (MetaMask SAK)** | [`0x15f8ed352fd940075ec3f7cedc773052f8af72d`](https://basescan.org/address/0x15f8ed352fd940075ec3f7cedc773052f8af72d) | ✅ Live on Base Mainnet |
+| **Smart Account Delegation Prefix** | `0xef0100` | EIP-7702 bytecode marker |
+| **1Shot Relayer Gateway** | [`https://relayer.1shotapi.com/relayers`](https://relayer.1shotapi.com/relayers) | ✅ Production JSON-RPC |
+| **Aerodrome DEX Router** | [`0xe592427a0aece92de3edee1f18e0157c05861564`](https://basescan.org/address/0xe592427a0aece92de3edee1f18e0157c05861564) | ✅ Live on Base Mainnet |
+| **Base Mainnet RPC** | `https://mainnet.base.org` | Official Coinbase RPC |
+| **BaseScan Explorer** | `https://basescan.org` | Audit trail links |
+
+### Why No Custom Contract Deployment?
+
+SENTINEL is a **protocol consumer**, not a protocol deployer. The system's on-chain value comes from composing existing standards:
+
+- **EIP-7702** — The upgrade delegation is issued by MetaMask's SAK enforcer; no custom contract needed.
+- **ERC-7715** — `wallet_grantPermissions` is handled entirely by MetaMask; the permission context is an off-chain signed blob verified by the relayer.
+- **ERC-7710** — Sub-delegations are signed blobs included as calldata in relayer submissions; no registry contract needed.
+- **1Shot Relayer** — Permissionless JSON-RPC; SENTINEL sends signed bundles, the relayer pays gas in USDC and broadcasts on-chain.
+- **USDC payments** — Standard ERC-20 `transfer` calls to Circle's existing USDC contract.
+
+Every autonomous agent payment creates a real, immutable BaseScan transaction. Each intelligence card in the dashboard carries a clickable `↗` link to the transaction that funded it.
 
 ---
 

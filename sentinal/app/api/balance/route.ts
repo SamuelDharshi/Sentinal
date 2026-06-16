@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getUSDCBalance, isDeleGator } from '@/lib/chain/balance';
+import { getActiveSession, getAgentStates } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,29 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Check if the current session is mock
+    const activeSession = getActiveSession() as any;
+    const isMock = activeSession && 
+      activeSession.permission_context && 
+      (activeSession.permission_context.startsWith('0xmock') || activeSession.permission_context.includes('0xmock'));
+
+    if (isMock) {
+      // Get sum of agent remaining budgets
+      const agents = getAgentStates() as any[];
+      const remainingBudgetSum = agents.reduce((sum, agent) => sum + (Number(agent.remaining_budget) || 0), 0);
+      
+      return NextResponse.json({
+        userAddress,
+        userBalanceUSDC: remainingBudgetSum,
+        sessionAddress,
+        sessionBalanceUSDC: remainingBudgetSum,
+        isSmartAccount: true,
+        chain: 'base-sepolia',
+        chainId: 84532,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     const [userBalance, isSmartAccount] = await Promise.all([
       getUSDCBalance(userAddress),
       isDeleGator(userAddress),
@@ -46,3 +70,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

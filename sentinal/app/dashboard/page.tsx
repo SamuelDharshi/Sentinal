@@ -561,6 +561,45 @@ function IntelligenceCardComp({ card, onClick }: { card: ICard; onClick: () => v
         </div>
       )}
 
+      {/* Transaction Hashes list */}
+      {trace.some(step => step.txHash) && (
+        <div 
+          style={{ 
+            marginTop: '12px', 
+            paddingTop: '8px', 
+            borderTop: '1px dashed var(--border-dim)',
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '4px' 
+          }}
+        >
+          {trace.filter(step => step.txHash).map((step, i) => (
+            <div 
+              key={`tx-${i}`} 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                fontFamily: 'var(--font-mono)', 
+                fontSize: '10px' 
+              }}
+            >
+              <span style={{ color: 'var(--text-dim)' }}>{step.agent} Tx:</span>
+              <a 
+                href={`${BASESCAN}/${step.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ color: 'var(--text-mono)', textDecoration: 'underline' }}
+                title="Open in BaseScan"
+              >
+                {step.txHash?.slice(0, 10)}...{step.txHash?.slice(-8)} ↗
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className={styles.cardMeta}>
         <span>{new Date(card.createdAt).toLocaleTimeString()}</span>
         <span>{card.sourceCount || 0} sources</span>
@@ -669,6 +708,40 @@ function CardModal({ card, onClose }: { card: ICard; onClose: () => void }) {
             <span className="trace-chip">[You]</span>
           </div>
         </section>
+
+        {trace.some(step => step.txHash) && (
+          <section className={styles.modalSection}>
+            <h3 className={styles.modalSectionTitle}>ON-CHAIN TRANSACTION HASHES</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {trace.filter(step => step.txHash).map((step, i) => (
+                <div 
+                  key={`modal-tx-${i}`} 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    background: 'var(--bg-raised)', 
+                    border: '1px solid var(--border)', 
+                    borderRadius: '8px', 
+                    padding: '8px 12px',
+                    fontFamily: 'var(--font-mono)', 
+                    fontSize: '12px' 
+                  }}
+                >
+                  <span style={{ color: 'var(--text-secondary)' }}>{step.agent} Agent:</span>
+                  <a 
+                    href={`${BASESCAN}/${step.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--text-mono)', textDecoration: 'underline', wordBreak: 'break-all' }}
+                  >
+                    {step.txHash} ↗
+                  </a>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className={styles.modalFooter}>
           <span>Total cost: <strong>${(card.totalCost || 0).toFixed(4)}</strong></span>

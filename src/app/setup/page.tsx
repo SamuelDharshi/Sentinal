@@ -32,6 +32,7 @@ export default function SetupPage() {
   const [granting, setGranting] = useState(false);
   const [error, setError] = useState('');
   const [address, setAddress] = useState('');
+  const [permMode, setPermMode] = useState<'real' | 'observer' | null>(null);
   const [sessionKeyAddr, setSessionKeyAddr] = useState('');
 
   useEffect(() => {
@@ -74,14 +75,18 @@ export default function SetupPage() {
           sessionKey.address,
           weeklyBudget
         );
+        setPermMode('real');
       } catch (walletErr: unknown) {
-        console.warn('[Setup] wallet_grantPermissions failed:', walletErr);
-        // MetaMask may not support this yet in all builds.
-        // We continue with a derived context so the demo still runs.
+        console.warn('[Setup] wallet_grantPermissions failed — observer mode:', walletErr);
+        // MetaMask Flask / SAK build required for wallet_grantPermissions.
+        // Observer mode: Venice AI + free data sources still run fully.
+        // On-chain USDC payments via 1Shot are simulated in this mode.
+        setPermMode('observer');
         permissionContext = {
           permissionsContext: `0xef0100${sessionKey.address.slice(2)}` as `0x${string}`,
           permissions: [],
           expiry: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
+          observerMode: true,
         };
       }
 
@@ -249,6 +254,45 @@ export default function SetupPage() {
           <div className="wizard-step">
             <h2 className={styles.stepHeading}>Set your budget</h2>
             <p className={styles.stepSub}>One ERC-7715 permission. Agents operate within this for 30 days.</p>
+
+            {/* Observer mode banner — shown after grant attempt fails */}
+            {permMode === 'observer' && (
+              <div style={{
+                background: 'rgba(251,146,60,0.08)',
+                border: '1px solid rgba(251,146,60,0.35)',
+                borderRadius: 10,
+                padding: '12px 16px',
+                marginBottom: 16,
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}>
+                <strong style={{ color: '#fb923c' }}>⚠ Observer Mode</strong>
+                <br />
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  <code>wallet_grantPermissions</code> (ERC-7715) requires MetaMask with the
+                  Smart Accounts Kit enabled. Your current MetaMask build doesn&apos;t support it yet.
+                  <br />
+                  <strong style={{ color: 'var(--text-primary)' }}>The demo still runs fully:</strong>{' '}
+                  Venice AI synthesizes real intelligence, HackerNews / GitHub / ProductHunt feeds are live.
+                  On-chain USDC payments via 1Shot are simulated in this mode.
+                </span>
+              </div>
+            )}
+            {permMode === 'real' && (
+              <div style={{
+                background: 'rgba(34,197,94,0.08)',
+                border: '1px solid rgba(34,197,94,0.35)',
+                borderRadius: 10,
+                padding: '12px 16px',
+                marginBottom: 16,
+                fontSize: 13,
+              }}>
+                <strong style={{ color: '#22c55e' }}>✓ ERC-7715 Permission Granted</strong>
+                <span style={{ color: 'var(--text-secondary)', marginLeft: 8 }}>
+                  Real on-chain budget delegation active. Agents will submit live USDC payments via 1Shot.
+                </span>
+              </div>
+            )}
 
             <div className={styles.budgetWidget}>
               <div className={styles.budgetDisplay}>

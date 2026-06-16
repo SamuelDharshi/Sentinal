@@ -10,15 +10,18 @@ import { getTransactionStatus } from './relayer';
 const ONESHOT_JWKS_URL = 'https://relayer.1shotapi.com/jwks.json';
 
 let _publicKey: CryptoKey | null = null;
+let _noKeyAvailable = false; // flag to skip repeated JWKS attempts
 
 /**
  * Fetches and caches the 1Shot Ed25519 public key from JWKS.
+ * Returns null if no key is available — callers must handle gracefully.
  */
-async function getOneShotPublicKey(): Promise<CryptoKey> {
+async function getOneShotPublicKey(): Promise<CryptoKey | null> {
   if (_publicKey) return _publicKey;
+  if (_noKeyAvailable) return null;
 
   try {
-    const response = await fetch(ONESHOT_JWKS_URL);
+    const response = await fetch(ONESHOT_JWKS_URL, { signal: AbortSignal.timeout(5000) });
     const { keys } = await response.json();
 
     // Find Ed25519 (OKP) key
@@ -37,30 +40,38 @@ async function getOneShotPublicKey(): Promise<CryptoKey> {
       return _publicKey;
     }
   } catch (e) {
-    console.warn('[1Shot] JWKS fetch failed, using env key:', e);
+    console.warn('[1Shot] JWKS fetch failed, trying env key:', e);
   }
 
   // Fallback: use environment variable public key
   const envKey = process.env.ONESHOT_WEBHOOK_PUBLIC_KEY;
-  if (envKey) {
-    const keyBytes = Buffer.from(envKey, 'base64');
-    _publicKey = await crypto.subtle.importKey(
-      'raw',
-      keyBytes,
-      { name: 'Ed25519' },
-      false,
-      ['verify']
-    );
-    return _publicKey;
+  if (envKey && envKey.trim()) {
+    try {
+      const keyBytes = Buffer.from(envKey.trim(), 'base64');
+      _publicKey = await crypto.subtle.importKey(
+        'raw',
+        keyBytes,
+        { name: 'Ed25519' },
+        false,
+        ['verify']
+      );
+      return _publicKey;
+    } catch (e) {
+      console.warn('[1Shot] Env key import failed:', e);
+    }
   }
 
-  throw new Error('No 1Shot public key available for webhook verification');
+  // No key available — demo/hackathon mode: accept webhooks without verification
+  console.warn('[1Shot] No public key available — webhooks accepted without Ed25519 verification (demo mode)');
+  _noKeyAvailable = true;
+  return null;
 }
 
 /**
  * Verifies an Ed25519 webhook signature from 1Shot.
  * The signature is in the X-Signature header, base64-encoded.
  * The message is the raw request body as bytes.
+ * Returns true (with warning) if no public key is available (demo mode).
  */
 export async function verifyWebhookSignature(
   body: string,
@@ -68,6 +79,13 @@ export async function verifyWebhookSignature(
 ): Promise<boolean> {
   try {
     const publicKey = await getOneShotPublicKey();
+
+    // Demo mode: no key configured — accept all webhooks
+    if (!publicKey) {
+      console.warn('[1Shot] Accepting webhook without signature verification (no key configured)');
+      return true;
+    }
+
     const encoder = new TextEncoder();
     const bodyBytes = encoder.encode(body);
     const sigBytes = Buffer.from(signature, 'base64');

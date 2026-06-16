@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './dashboard.module.css';
 import { IntelligenceCard as ICard, AuditEvent, AgentState } from '@/types';
 
-const BASESCAN = 'https://basescan.org/tx';
+const BASESCAN = process.env.NEXT_PUBLIC_BASESCAN_URL || 'https://sepolia.basescan.org/tx';
 const AGENTS_META = [
   { id: 'chief',   name: 'CHIEF',   role: 'Orchestrator', icon: '◎', color: 'var(--purple)' },
   { id: 'scout',   name: 'SCOUT',   role: 'Data Acquisition', icon: '◎', color: 'var(--teal)' },
